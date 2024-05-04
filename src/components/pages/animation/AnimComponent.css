@@ -1,0 +1,49 @@
+
+.anim1 {
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  padding: 10px;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  animation: anima 1s linear infinite;
+  position: absolute;
+  display: flex;
+ 
+  border-right-color: transparent; 
+  border-top-color: transparent; 
+  align-items: center;
+  justify-content: center;
+}
+
+  
+  .anim2 {
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    padding: 4px;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-top: 2px solid transparent;
+    animation: anima2 0.4s linear infinite;
+  }
+  @keyframes anima {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes anima2 {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(-360deg);
+    }
+  }
+  
