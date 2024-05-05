@@ -54,7 +54,7 @@ export default function NouveauFormateur() {
     }
   }, {
     onSuccess: () => {
-      queryClient.invalidateQueries('/liste-formaur');
+      queryClient.invalidateQueries('/liste-formateur');
     },
   });
 

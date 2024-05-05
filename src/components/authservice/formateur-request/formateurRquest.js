@@ -5,4 +5,9 @@ async function ajouterFormateur(data) {
         return response;
 }
 
-export {ajouterFormateur};
+async function listeFormateur(currentPage) {
+        const response = await api.get(`/formateur/liste-formateur?page=${currentPage}`);
+        return response;
+}
+
+export {ajouterFormateur,listeFormateur};
