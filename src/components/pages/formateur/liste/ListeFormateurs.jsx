@@ -7,6 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 import DialogContext from '../../animation/DialogContext';
 import './listeFormateurs.css';
 import Button from '@mui/material/Button';
+import {  Popconfirm } from 'antd';
 import { FaPlus } from "react-icons/fa6";
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
@@ -14,16 +15,17 @@ import MenuItem from '@mui/material/MenuItem';
 import listeObjets from './formateur';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Pagination from '@mui/material/Pagination';
-import PaginationItem from '@mui/material/PaginationItem';
-import Stack from '@mui/material/Stack';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Link } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useMutation,useQuery, useQueryClient } from 'react-query';
 import { listeFormateur } from '../../../authservice/formateur-request/formateurRquest';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-
+import { MdDelete } from "react-icons/md";
+import {  Modal } from 'antd';
+import { ExclamationCircleFilled } from '@ant-design/icons';
+import {  message } from 'antd';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest';
 const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 const options = [
@@ -63,15 +65,80 @@ export default function ListeFormateurs() {
     setOpen(true);
   };
 
-  console.log('page',currentPage)
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
+
+  // supression des formateurs .......
+
+  const [dataToDelete,setDataToDelete]=useState([])
+  const [deleteTrChecked,setDeleteTrChecked]=useState(false)
+  function handleClickToDelete(event){
+          setDeleteTrChecked(event.target.checked)
+          if(event.target.checked && data?.formateurs){
+             setDataToDelete( data.formateurs.map(element => ({id:element.id ,delete: true})))
+          }else{
+            setDataToDelete( data.formateurs.map(element => ({id:element.id ,delete: false})))
+          }
+        }
+  
+  function onChangeInput(e, index) {
+    if (dataToDelete.find((element) => element.id === index)) {
+        setDataToDelete(prev => prev.map(element => (element.id === index ? {...element, delete: e.target.checked} : element)));
+    } else {
+        setDataToDelete(prev => ([...prev, {id: index, delete: e.target.checked}]));
+    }
+}
+// modal confirm ....
+const queryClient = useQueryClient();
+const { mutate } = useMutation(async (data) => {
+    try {
+        await supprimerformateur(data);
+    } catch (error) {
+        console.log(error);
+    }
+}, {
+    onSuccess: () => {
+        queryClient.invalidateQueries(['liste-formateur', currentPage]);
+    }
+});
+
+const [openDelete, setOpenDelete] = useState(false);
+const [confirmLoading, setConfirmLoading] = useState(false);
+
+const showPopconfirm = () => {
+    setOpenDelete(true);
+};
+
+const handleOk = async () => {
+  setConfirmLoading(true);
+  const nouvelleListe = dataToDelete.map(element => element.delete===true?element.id:undefined).join('-');
+  try {
+      await mutate(nouvelleListe);
+      setOpenDelete(false);
+      setConfirmLoading(false);
+      message.success('Le formateur a été supprimé avec succès', 2);
+      setDataToDelete([])
+  } catch (error) {
+      console.error("Une erreur s'est produite lors de la suppression du formateur:", error);
+      setOpenDelete(false);
+      setConfirmLoading(false);
+      message.error('Une erreur s\'est produite lors de la suppression du formateur', 2);
+  }
+};
+
+
+const handleCancel = () => {
+    message.error('La suppression a été annulée', 2);
+    setOpenDelete(false);
+};
+
+
   return (
     <section className='formateurs-container'>
       <article className='description-container'>
-        <span>Liste des formateurs de l'ISTA BOUZNIKA</span>
+        <span>Liste des formateurs de l ISTA BOUZNIKA</span>
         <Link to="/formateur/ajouter-formateur">
           <Button>
             <FaPlus className='plusFormateur' />
@@ -125,30 +192,78 @@ export default function ListeFormateurs() {
           </Menu>
         </div>
       </article>
+      {
+    dataToDelete.some(element => element.delete === true) && 
+    <div style={{ borderRadius:"3px 3px 0 0"}} className='supressionData'>
+       <span style={{display:"flex",alignItems:"center"}} >
+       <Checkbox
+          {...label}
+          onChange={handleClickToDelete}
+          checked={dataToDelete.some(element => element.delete === true)}
+          sx={{
+            transform: "scale(0.8)",
+            zIndex:100000000,
+            marginLeft: "12px",
+            color: "rgb(99, 115, 129)",
+            '&.Mui-checked': {
+              color: "rgba(0, 167, 111, 0.897)",
+            },
+          }}
+        />
+        <span style={{fontSize:"14px"}}> {
+          dataToDelete.filter((formateur)=>formateur.delete===true).length 
+          } <span> Formateurs selectionnés</span> </span>
+       </span>
 
+  <Popconfirm
+    title="Suppression"
+    description="Êtes-vous sûr de vouloir supprimer le formateur ?"
+      open={openDelete}
+      placement='top'
+      onConfirm={handleOk}
+      cancelText="Non"
+      okText="Oui"
+      okButtonProps={{
+        loading: confirmLoading,
+        style: { backgroundColor: 'red', borderColor: 'red' }
+      }}
+      onCancel={handleCancel}
+    >
+        <IconButton aria-label="delete"  onClick={showPopconfirm}>
+        <DeleteIcon style={{fontSize:"19px",color:"brown"}} />
+      </IconButton>
+    </Popconfirm>
+    </div> }
       <table className='formateurs-table'>
-        <thead>
-          <tr>
-            <th>
-              <Checkbox
-                {...label}
-                sx={{
-                  transform: "scale(0.8)",
-                  marginLeft: "10px",
-                  color: "rgb(99, 115, 129)",
-                  '&.Mui-checked': {
-                    color: "rgba(0, 167, 111, 0.897)",
-                  },
-                }}
-              />
-            </th>
-            <th>Matricule</th>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Email</th>
-            <th>Métier</th>
-          </tr>
-        </thead>
+      <thead >
+  {
+    !dataToDelete.some(element => element.delete === true) &&
+    <tr > 
+      <th style={{borderRadius:"3px 0 0 0"}}>
+        <Checkbox
+          {...label}
+          onChange={handleClickToDelete}
+          checked={dataToDelete.some(element => element.delete === true)}
+          sx={{
+            transform: "scale(0.8)",
+            zIndex:100000000,
+            marginLeft: "10px",
+            color: "rgb(99, 115, 129)",
+            '&.Mui-checked': {
+              color: "rgba(0, 167, 111, 0.897)",
+            },
+          }}
+        />
+      </th>
+      <th>Matricule</th>
+      <th>Nom</th>
+      <th>Prénom</th>
+      <th>Email</th>
+      <th style={{borderRadius:"0 3px 0 0"}}>Métier</th>
+    </tr> 
+  }
+</thead>
+
         <tbody className='formateurs-list'>
           {!isLoading &&
             data?.formateurs.map((formateur, index) => (
@@ -156,6 +271,9 @@ export default function ListeFormateurs() {
                 <td>
                   <Checkbox
                     {...label}
+                    checked={dataToDelete.some(element => element.id === formateur.id && element.delete)}
+                 
+                    onChange={(e)=>onChangeInput(e,formateur.id)}
                     sx={{
                       transform: "scale(0.8)",
                       marginLeft: "10px",
@@ -190,16 +308,7 @@ export default function ListeFormateurs() {
        
       {data && data?.totalPages > 1 && (
         <section className="pagination">
-            <Pagination
-              count={data?.totalPages}
-              onChange={handlePageChange}
-              renderItem={(item) => (
-                <PaginationItem
-                  slots={{ previous: ArrowBackIcon, next: ArrowForwardIcon }}
-                  {...item}
-                />
-              )}
-            />
+          <Pagination page={currentPage}   onChange={handlePageChange} count={data?.totalPages} hidePrevButton hideNextButton />
         </section>
       )}
 
@@ -209,3 +318,5 @@ export default function ListeFormateurs() {
     </section>
   );
 }
+
+

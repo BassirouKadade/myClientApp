@@ -10,4 +10,9 @@ async function listeFormateur(currentPage) {
         return response;
 }
 
-export {ajouterFormateur,listeFormateur};
+async function supprimerformateur(data) {
+        const response = await api.delete(`/formateur/supprimer-formateur/${data}`);
+        return response;
+}
+
+export {ajouterFormateur,supprimerformateur,listeFormateur};

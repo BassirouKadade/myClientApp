@@ -7,6 +7,7 @@ import { ajouterFormateur } from '../../../authservice/formateur-request/formate
 import AnimComponent from '../../animation/AnimComponent';
 import { SmileOutlined } from '@ant-design/icons';
 import {  notification } from 'antd';
+
 export default function NouveauFormateur() {
   const [errors, setErrors] = useState({
     matricule: false,
@@ -54,7 +55,7 @@ export default function NouveauFormateur() {
     }
   }, {
     onSuccess: () => {
-      queryClient.invalidateQueries('/liste-formateur');
+      queryClient.invalidateQueries(['liste-formateur',1]);
     },
   });
 
