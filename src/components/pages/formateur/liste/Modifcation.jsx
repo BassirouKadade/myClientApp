@@ -1,89 +1,206 @@
-import React from 'react'
-import './modification.css'
-export default function Modifcation() {
+import  { useState } from 'react';
+import Button from '@mui/material/Button';
+import { REGEX_REST, REGEX_EMAIL } from '../../../authservice/regex';
+import './modification.css';
+import { useMutation, useQueryClient } from 'react-query';
+import AnimComponent from '../../animation/AnimComponent';
+
+import { updateformateur } from '../../../authservice/formateur-request/formateurRquest';
+export default function Modification({ openNotification,handleClose, currentPage, formateur}) {
+  const [errors, setErrors] = useState({
+    matricule: false,
+    nom: false,
+    prenom: false,
+    metier: false,
+    email: false,
+  });
+
+  
+  const [errorServer, setErrorServer] = useState({});
+  const queryClient = useQueryClient();
+
+  const [formData, setFormData] = useState(formateur)
+
+  const { mutate, isLoading } = useMutation(async (data) => {
+    try {
+      const reponse= await updateformateur(data);
+      console.log(reponse)
+      // clearFormData();
+      handleClose()
+      openNotification()
+    } catch (error) {
+      console.log("ero",error)
+      setErrorServer(error.response.data);
+    }
+  }, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['liste-formateur',currentPage]);
+    },
+  });
+
+  // existeEMail
+
+  function regexError(data) {
+    let hasError = false;
+
+    if (!REGEX_REST.test(data.matricule)) {
+      setErrors(prev => ({ ...prev, matricule: true }));
+      hasError = true;
+    } else {
+      setErrors(prev => ({ ...prev, matricule: false }));
+    }
+
+    if (!REGEX_REST.test(data.metier)) {
+      setErrors(prev => ({ ...prev, metier: true }));
+      hasError = true;
+    } else {
+      setErrors(prev => ({ ...prev, metier: false }));
+    }
+
+    if (!REGEX_EMAIL.test(data.email)) {
+      setErrors(prev => ({ ...prev, email: true }));
+      hasError = true;
+    } else {
+      setErrors(prev => ({ ...prev, email: false }));
+    }
+
+    if (!REGEX_REST.test(data.nom)) {
+      setErrors(prev => ({ ...prev, nom: true }));
+      hasError = true;
+    } else {
+      setErrors(prev => ({ ...prev, nom: false }));
+    }
+
+    if (!REGEX_REST.test(data.prenom)) {
+      setErrors(prev => ({ ...prev, prenom: true }));
+      hasError = true;
+    } else {
+      setErrors(prev => ({ ...prev, prenom: false }));
+    }
+
+    return !hasError;
+  }
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+   
+    if (!regexError(formData)) {
+      return;
+    }
+    mutate(formData);
+  };
+
+  const clearFormData = () => {
+    setFormData({
+      matricule: '',
+      nom: '',
+      prenom: '',
+      metier: '',
+      email: '',
+    });
+    setErrorServer({})
+  };
+
+
+  console.log(errorServer)
+
+
   return (
-    <section  className="formateur-section" >
-    <div className="formateur-header">
-      <h3 id="formateur-heading">Formateur</h3>
-    </div>
-    <form action="" method="post" className="formateur-form">
-      <article className="formateur-article">
-        <div className="formateur-info">
-          <label className="formateur-label" htmlFor="matricule">
-            Matricule <span className="required-field">*</span>
-          </label>
-          <input
-            type="text"
-            id="matricule"
-            name="matricule"
-            placeholder="Matricule ..."
-            className="formateur-input"
-          />
-        </div>
-
-        <div className="formateur-info">
-          <label className="formateur-label" htmlFor="metier">
-            Métier <span className="required-field">*</span>
-          </label>
-          <input
-            type="text"
-            id="metier"
-            name="metier"
-            placeholder="Métier ..."
-            className="formateur-input"
-          />
-        </div>
-      </article>
-
-      <article className="formateur-article">
-        <div className="formateur-info formateur-info-email">
-          <label className="formateur-label" htmlFor="email">
-            Email <span className="required-field">*</span>
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="Email ..."
-            className="formateur-input"
-          />
-        </div>
-      </article>
-
-      <article className="formateur-article">
-        <div className="formateur-info">
-          <label className="formateur-label" htmlFor="nom">
-            Nom <span className="required-field">*</span>
-          </label>
-          <input
-            type="text"
-            id="nom"
-            name="nom"
-            placeholder="Nom ..."
-            className="formateur-input"
-          />
-        </div>
-        <div className="formateur-info">
-          <label className="formateur-label" htmlFor="prenom">
-            Prénom <span className="required-field">*</span>
-          </label>
-          <input
-            type="text"
-            id="prenom"
-            name="prenom"
-            placeholder="Prénom ..."
-            className="formateur-input"
-          />
-        </div>
-      </article>
-
-      <div className="formateur-action">
-        <button type="buuton" className="formateur-button">
-          Modifier
-        </button>
+    
+    <section className="formateur-section">
+      <div className="formateur">
+        <h3 id="Text">Formateur</h3>
       </div>
-    </form>
-  </section>
+      <form onSubmit={handleSubmit} className="formateur">
+        <article className="formaterChild">
+          <div className="info">
+            <label className="label" htmlFor="matricule">
+              <span>Matricule <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="text"
+              id="matricule"
+              name="matricule"
+              readOnly
+              placeholder="Matricule ..."
+              className={`inputClass ${errors.matricule || errorServer.existMat ? 'is-invalid-error' : errors.matricule === false ? 'is-valid-confirm' : ''}`}
+              value={formData.matricule}
+              onChange={(e) => setFormData({ ...formData, matricule: e.target.value })}
+            />
+          </div>
 
-  )
+          <div className="info">
+            <label className="label" htmlFor="metier">
+              <span>Métier <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="text"
+              id="metier"
+              name="metier"
+              placeholder="Métier ..."
+              className={`inputClass ${errors.metier ? 'is-invalid-error' : errors.metier === false ? 'is-valid-confirm' : ''}`}
+              value={formData.metier}
+              onChange={(e) => setFormData({ ...formData, metier: e.target.value })}
+            />
+          </div>
+        </article>
+
+        <article className="formaterChild">
+          <div className="info infoEmail">
+            <label className="label" htmlFor="email">
+              <span>Email <span className="champsO">*</span></span>
+              {errorServer.existEmail && <span className='existData'>{errorServer.existEmail}</span>}
+            </label>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              placeholder="Email ..."
+              className={`inputClass ${errors.email || errorServer.existEmail ? 'is-invalid-error' : errors.email === false ? 'is-valid-confirm' : ''}`}
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+        </article>
+
+        <article className="formaterChild">
+          <div className="info">
+            <label className="label" htmlFor="nom">
+              <span>Nom <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="text"
+              id="nom"
+              name="nom"
+              placeholder="Nom ..."
+              className={`inputClass ${errors.nom ? 'is-invalid-error' : errors.nom === false ? 'is-valid-confirm' : ''}`}
+              value={formData.nom}
+              onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+            />
+          </div>
+          <div className="info">
+            <label className="label" htmlFor="prenom">
+              <span>Prénom <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="text"
+              id="prenom"
+              name="prenom"
+              placeholder="Prénom ..."
+              className={`inputClass ${errors.prenom ? 'is-invalid-error' : errors.prenom === false ? 'is-valid-confirm' : ''}`}
+              value={formData.prenom}
+              onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
+            />
+          </div>
+        </article>
+
+        <div className="formaterChild buttonF">
+          <Button type="submit" className="buttonMbut articleButton" disabled={isLoading}>
+            {isLoading ? <AnimComponent borderColor={'white'} bord={2} padChild={4} padParent={11} /> : 'Ajouter'}
+          </Button>
+        </div>
+      </form>
+    </section>
+  );
 }
+

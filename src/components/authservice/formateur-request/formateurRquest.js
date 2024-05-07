@@ -15,4 +15,9 @@ async function supprimerformateur(data) {
         return response;
 }
 
-export {ajouterFormateur,supprimerformateur,listeFormateur};
+async function updateformateur(data) {
+        const response = await api.put('/formateur/update-formateur',data);
+        return response;
+}
+
+export {ajouterFormateur,updateformateur,supprimerformateur,listeFormateur};

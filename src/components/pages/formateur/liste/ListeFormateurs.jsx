@@ -25,6 +25,8 @@ import {  Modal } from 'antd';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import {  message } from 'antd';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { SmileOutlined } from '@ant-design/icons';
+import {  notification } from 'antd';
 import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest';
 const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
@@ -134,9 +136,29 @@ const handleCancel = () => {
     setOpenDelete(false);
 };
 
+// modification ....
+const [formateurMod,setFormateurMod]=useState({})
 
+const [api, contextHolder] = notification.useNotification();
+  const openNotification = () => {
+    api.open({
+      placement: "bottomRight",
+      message: 'Modification Formateur',
+      description: 'Formateur est modifié avec succès',
+      icon: (
+        <SmileOutlined
+          style={{
+            color: '#007bff',
+          }}
+        />
+      ),
+      duration: 1.5 // Durée en secondes avant que la notification disparaisse
+    });
+    
+  };
   return (
     <section className='formateurs-container'>
+              {contextHolder}
       <article className='description-container'>
         <span>Liste des formateurs de l ISTA BOUZNIKA</span>
         <Link to="/formateur/ajouter-formateur">
@@ -202,7 +224,6 @@ const handleCancel = () => {
           checked={dataToDelete.some(element => element.delete === true)}
           sx={{
             transform: "scale(0.8)",
-            zIndex:100000000,
             marginLeft: "12px",
             color: "rgb(99, 115, 129)",
             '&.Mui-checked': {
@@ -290,10 +311,14 @@ const handleCancel = () => {
                 <td>{formateur.email}</td>
                 <td>{formateur.metier}
                   <div className='edition'>
-                    <MdEdit onClick={handleClickOpen} className='edition-button' />
+                    <MdEdit onClick={()=>{
+                        handleClickOpen()
+                        setFormateurMod(formateur)
+                    } } className='edition-button' />
                   </div>
                 </td>
               </tr>
+              
             ))
           }
         </tbody>
@@ -313,7 +338,7 @@ const handleCancel = () => {
       )}
 
       <DialogContext setOpen={setOpen} open={open}>
-        <Modifcation />
+        <Modifcation openNotification={openNotification} handleClose={handleClose} currentPage={currentPage} formateur={formateurMod} />
       </DialogContext>
     </section>
   );
