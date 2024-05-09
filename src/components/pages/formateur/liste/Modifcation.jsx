@@ -23,9 +23,8 @@ export default function Modification({ openNotification,handleClose, currentPage
 
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
-      const reponse= await updateformateur(data);
-      console.log(reponse)
-      // clearFormData();
+      await updateformateur(data);
+      clearFormData();
       handleClose()
       openNotification()
     } catch (error) {
@@ -38,6 +37,7 @@ export default function Modification({ openNotification,handleClose, currentPage
     },
   });
 
+  console.log("serveur error",errorServer)
   // existeEMail
 
   function regexError(data) {
@@ -149,14 +149,14 @@ export default function Modification({ openNotification,handleClose, currentPage
           <div className="info infoEmail">
             <label className="label" htmlFor="email">
               <span>Email <span className="champsO">*</span></span>
-              {errorServer.existEmail && <span className='existData'>{errorServer.existEmail}</span>}
+              {errorServer.existeEMail && <span className='existData'>{errorServer.existeEMail}</span>}
             </label>
             <input
               type="text"
               id="email"
               name="email"
               placeholder="Email ..."
-              className={`inputClass ${errors.email || errorServer.existEmail ? 'is-invalid-error' : errors.email === false ? 'is-valid-confirm' : ''}`}
+              className={`inputClass ${errors.email || errorServer.existeEMail ? 'is-invalid-error' : errors.email === false ? 'is-valid-confirm' : ''}`}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />

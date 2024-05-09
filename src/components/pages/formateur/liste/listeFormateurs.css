@@ -8,7 +8,7 @@
 
 .description-container{
     width: 100%;
-    margin-top: 10px;
+    margin-top: 6px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -77,9 +77,12 @@ a .plusFormateur{
       align-items: center;
       padding: 0;
 }
-.filter-item-one {
-      width: 93%;
-      margin-right: 10px;
+.chargement{
+      width: 98%;
+      height: 43px;
+}
+.chargement .filter-item-one {
+      width:97%;
       height: 100%;
       padding: 0 10px;
       display: flex;
@@ -93,11 +96,10 @@ a .plusFormateur{
       box-shadow: 0 2px 2px rgba(0, 167, 111, 0.3); /* Enhanced hover shadow */
     }
     
-
-.filter-input{
+    .filter-input{
       border: none;
       outline: none;
-      width: 93%;
+      width: 98%;
       margin: 0 6px;
       transition: 0.2s;
       background-color:transparent;
@@ -109,7 +111,7 @@ a .plusFormateur{
 }
 
 .filter-item-two{
-    width: 7%;
+    width: 3%;
     height: 100%;
     align-items: center;
     display: flex;
@@ -119,6 +121,7 @@ a .plusFormateur{
       height: 100%;
       font-size:22px;
 }
+
 
 
 .filter-item-one .form-input-mui{
@@ -208,8 +211,10 @@ tbody > tr:hover{
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    padding: 10px 0;
     height: 60px;
     padding-right: 10px;
+    border-radius: 3px 3px 0 0;
     border-bottom: 1px dashed rgb(241, 243, 244);
 
     background: linear-gradient(135deg, rgba(91, 228, 155, 0.2), rgba(0, 167, 111, 0.2)) rgb(255, 255, 255);
@@ -218,3 +223,54 @@ tbody > tr:hover{
 .buttonSupprimer{
         background-color: rebeccapurple;
 }
+
+.buttonTH{ 
+      border:none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color:transparent
+}
+.buttonTH-icons{
+         font-size: 14px;
+         visibility: hidden;
+         margin-left: 4px;
+}
+.buttonTH-icons-rotate{
+        transform: rotate(180deg);
+}
+.iconsDiaplay{
+  visibility: visible;
+}
+
+/* rechercher node found .... */
+
+.empty-container {
+      position: absolute;
+      display: flex; /* Arrange elements horizontally */
+      flex-direction: column; /* Stack elements vertically */
+      align-items: center; /* Center elements horizontally */
+      justify-content: center; /* Center elements vertically */
+      width: 50%;
+      left: 25%;
+      top: 50%;
+      height: 40%; /* Ensure component fills viewport height */
+      background-color: #f5f5f5; /* Light gray background */
+      padding: 2rem; /* Add some padding */
+      border-radius: 5px; /* Rounded corners */
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); /* Subtle box shadow */
+    }
+    
+    .empty-container p {
+      font-size: 1rem; /* Adjust font size */
+      margin-top: 1rem; /* Add space between icon and text */
+      color: #333; /* Text color */
+    }
+    
+    .empty-container svg {
+      /* Customize icon styles (adjust based on library) */
+      color: #888; /* Adjust icon color */
+      width: 3rem; /* Adjust icon size */
+      height: 3rem; /* Adjust icon size */
+    }
+    

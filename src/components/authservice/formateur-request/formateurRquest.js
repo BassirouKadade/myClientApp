@@ -20,4 +20,9 @@ async function updateformateur(data) {
         return response;
 }
 
-export {ajouterFormateur,updateformateur,supprimerformateur,listeFormateur};
+async function formateurSearch(data) {
+        const response = await api.get(`/formateur/search-formateur?search=${data}`);
+        return response;
+}
+
+export {ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};
