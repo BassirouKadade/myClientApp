@@ -17,7 +17,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Pagination from '@mui/material/Pagination';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { listeFormateur, formateurSearch } from '../../../authservice/formateur-request/formateurRquest'; // Fonctions de requête pour récupérer la liste et rechercher des formateurs
+import { searchFormateurNext } from '../../../authservice/formateur-request/formateurRquest';
+import { listeFormateur,formateurSearch } from '../../../authservice/formateur-request/formateurRquest'; // Fonctions de requête pour récupérer la liste et rechercher des formateurs
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { MdDelete } from "react-icons/md";
@@ -39,9 +40,7 @@ import { MdInfoOutline } from "react-icons/md";
 // import backgroundImage from '../../../assets/1616615797_51-p-krasnii-fon-na-ves-ekran-57.jpg';
 import { FaExclamationCircle } from "react-icons/fa";
 /*
-   1 ---- Probeleme de pagination pour la recherche  
-   2 ----  Probleme de rechercher pour le loading   
-   3 ----  Probleme de note found pour la list au niveau de demarae
+   1 ----  Probeleme de pagination pour la recherche  
    4 ----  Porbeleme de detaill
    5 ----  Ajout des modules users
    6 ----  xprter en PDF la liste des users
@@ -57,7 +56,13 @@ const ITEM_HEIGHT = 48;
 ****************************************
             A  NOTER   ------------------
 Temps d'attente pour les opérations asynchrones
-   Merci de supprimer le temps d'attente en mode production */
+   Merci de supprimer le temps d'attente en mode production 
+   
+   
+   PROBLEME A RESOUDRE
+   -- Apres un recherche vous serez obliger de changer les données de dl'inpt pout pouvoir vois le resulat,car les 
+     la valeur precedente de l'inpu a ete deja inclu dans les clés de useQuery
+   */
 
 const timeTest = import.meta.env.VITE_TIME;
 
@@ -75,7 +80,9 @@ export default function ListeFormateurs() {
 
   const [open, setOpen] = useState(false); // Gestion de la boîte de dialogue de modification
   const [currentPage, setCurrentPage] = useState(1); // Gestion de la pagination
-  const [totalPages,setTotalePages]=useState(0)
+  const [currentPageRechercher, setCurrentPageRechercher] = useState(null); // Gestion de la pagination
+  
+  const [totalPages,setTotalePages]=useState({})
   // Récupération de la liste des formateurs avec React Query
   const { data, isLoading } = useQuery(['liste-formateur',currentPage], async () => {
     try {
@@ -88,7 +95,7 @@ export default function ListeFormateurs() {
     }
   });
 
-  
+  console.log('valeur current',totalPages)
 
   // Fonction pour fermer la boîte de dialogue de modification
   const handleClose = () => {
@@ -104,6 +111,10 @@ export default function ListeFormateurs() {
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
+  const handlePageRechercher = (event, value) => {
+    setCurrentPageRechercher(value);
+  };
+
 
   // Gestion de la sélection des formateurs à supprimer
   const [dataToDelete, setDataToDelete] = useState([]);
@@ -206,9 +217,10 @@ export default function ListeFormateurs() {
   };
 
   // État et fonction pour la recherche de formateurs
+
   const [formDataSearch, setFormDataSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [dataGlobal, setDataGlobal] = useState([]);
+  const [dataGlobal, setDataGlobal] = useState([{id:null}]);
   const [valInit, setValpInit] = useState('~~');
 
   const { isLoading: loadingDataSearch, data: dataSearchValue } = useQuery(
@@ -226,10 +238,43 @@ export default function ListeFormateurs() {
       }
     },
     {
-      enabled: isSearching && isSearching && formDataSearch !== valInit ,
+      enabled: isSearching && formDataSearch !== valInit ,
     }
   );
 
+  const handleRemoveCache = () => {
+    // Supprimer la requête et ses données associées du cache
+    queryClient.removeQueries(['formateur-search-formateur',valInit]);
+  };
+
+  const { isLoading: loadingDataSearchNext, data: dataSearchValueNext } = useQuery(
+    ['formateur-search', currentPageRechercher],
+    async () => {
+      try {
+        await new Promise(resolve=>setTimeout(resolve,timeTest))
+
+        const response = await searchFormateurNext(currentPageRechercher, formDataSearch);
+        return response.data;
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
+    {
+      enabled: currentPageRechercher > 0,
+    }
+  );
+  
+  useEffect(() => {
+    if (!loadingDataSearchNext && dataSearchValueNext?.formateurs) {
+       setDataGlobal(dataSearchValueNext.formateurs);
+    }
+  }, [loadingDataSearchNext,dataSearchValueNext]);
+
+
+  console.log('formateurs resech next',dataSearchValueNext?.formateurs ); 
+  console.log('formateurs resech next',dataGlobal ); // Accéder aux données renvoyées par la requête
+  // Accéder aux données renvoyées par la requête
   // Gestion de la recherche
   const handleSearch = () => {
     if (formDataSearch && valInit !== formDataSearch) {
@@ -237,11 +282,12 @@ export default function ListeFormateurs() {
     }
   };
 
+
   // Mise à jour des données globales après la recherche
   useEffect(() => {
     if (!loadingDataSearch && dataSearchValue?.formateurs) {
       setDataGlobal(dataSearchValue.formateurs);
-      setTotalePages(dataSearchValue?.totalPages); // Assurez-vous de définir setTotalPages correctement
+      setTotalePages({rechercher:dataSearchValue?.totalPages}); // Assurez-vous de définir setTotalPages correctement
     }
   }, [loadingDataSearch, dataSearchValue?.formateurs]);
 
@@ -249,15 +295,24 @@ export default function ListeFormateurs() {
   useEffect(() => {
     if (!loadingDataSearch) {
       setIsSearching(false);
+      handleRemoveCache()
     }
   }, [loadingDataSearch]);
+
+
+  // useEffect(() => {
+  //   if (!  loadingDataSearchNext    ) {
+  //     setDataGlobal(dataSearchValueNext?.formateurs);
+  //   }
+  // }, [ loadingDataSearchNext ]);
 
   // Mise à jour des données globales après le chargement initial ou la recherche
   const [actualiser,setActualiser]=useState(false)
   useEffect(()=>{
     if(!isLoading ||formDataSearch===" " ){
       setDataGlobal(data?.formateurs)
-      setTotalePages(data?.totalPages)
+      setTotalePages({datainit:data?.totalPages});
+      setCurrentPageRechercher(1)
     }
     if(data){
         if(data.formateurs.length===0 && currentPage>1){
@@ -543,12 +598,15 @@ function handleSort(referenceValue) {
         ))}
       </div>}
       {data && data?.totalPages > 1 && (
+        totalPages.datainit? <section className="pagination">
+          <Pagination page={currentPage}   onChange={handlePageChange} count={totalPages.datainit} hidePrevButton hideNextButton />
+        </section>:  
         <section className="pagination">
-          <Pagination page={currentPage}   onChange={handlePageChange} count={totalPages} hidePrevButton hideNextButton />
+          <Pagination page={currentPageRechercher}   onChange={handlePageRechercher} count={totalPages.rechercher} hidePrevButton hideNextButton />
         </section>
       )}
       <DialogContext setOpen={setOpen} open={open}>
-        <Modifcation openNotification={openNotification} handleClose={handleClose} currentPage={currentPage} formateur={formateurMod} />
+        <Modifcation openNotification={openNotification} handleClose={handleClose} currentPages={{totalPages, currentPageRechercher,currentPage,}} formateur={formateurMod} />
       </DialogContext>
     </section>
   );

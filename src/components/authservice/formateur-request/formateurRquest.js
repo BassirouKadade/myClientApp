@@ -25,4 +25,12 @@ async function formateurSearch(data) {
         return response;
 }
 
-export {ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};
+async function searchFormateurNext(page,data) {
+        const response = await api.get(`/formateur/search-next-page?search=${data}&page=${page}`);
+        return response;
+    }
+    
+
+
+
+export {searchFormateurNext,ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};

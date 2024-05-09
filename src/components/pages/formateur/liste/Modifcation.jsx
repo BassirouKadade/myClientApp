@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import AnimComponent from '../../animation/AnimComponent';
 
 import { updateformateur } from '../../../authservice/formateur-request/formateurRquest';
-export default function Modification({ openNotification,handleClose, currentPage, formateur}) {
+export default function Modification({ openNotification,handleClose, currentPages:{totalPages, currentPageRechercher,currentPage}, formateur}) {
   const [errors, setErrors] = useState({
     matricule: false,
     nom: false,
@@ -20,7 +20,7 @@ export default function Modification({ openNotification,handleClose, currentPage
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState(formateur)
-
+  
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
       await updateformateur(data);
@@ -33,12 +33,19 @@ export default function Modification({ openNotification,handleClose, currentPage
     }
   }, {
     onSuccess: () => {
-      queryClient.invalidateQueries(['liste-formateur',currentPage]);
+       if(totalPages.datainit){
+// const curretnpagesActul=currentPages.datainit?currentPages.currentPage:currentPages.currentPageRechercher
+queryClient.invalidateQueries(['liste-formateur',currentPage]);
+queryClient.invalidateQueries(['formateur-search-formateur',currentPage]);
+
+       }else{
+        // const curretnpagesActul=currentPages.datainit?currentPages.currentPage:currentPages.currentPageRechercher
+      queryClient.invalidateQueries(['formateur-search',currentPageRechercher]);
+       }
+      
     },
   });
-
-  console.log("serveur error",errorServer)
-  // existeEMail
+ 
 
   function regexError(data) {
     let hasError = false;
