@@ -245,9 +245,9 @@ export default function NavBarLeft() {
                       <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.filiere === 1 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
                       <span className="text-a">Créer</span>
                     </Link>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, filiere: 2 }))}>
+                    <Link to="filiere/liste-filiere" className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, filiere: 2 }))}>
                       <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.filiere === 2 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Liste</span>
+                      <span className="text-a">Liste Filieres</span>
                     </Link>
                   </li>
                 </ul>

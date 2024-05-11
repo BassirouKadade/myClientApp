@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import { REGEX_REST, REGEX_EMAIL } from '../../../authservice/regex';
-import './modification.css';
+import './nouveauFormateur.css';
 import { useMutation, useQueryClient } from 'react-query';
+import { ajouterFormateur } from '../../../authservice/formateur-request/formateurRquest';
 import AnimComponent from '../../animation/AnimComponent';
-import { updateformateur } from '../../../authservice/formateur-request/formateurRquest';
+import { SmileOutlined } from '@ant-design/icons';
+import {  notification } from 'antd';
 
-export default function Modification({ openNotification, handleClose, currentPages: { totalPages, setIsSearching, currentPageRechercher, currentPage }, formateur }) {
-  // State pour gérer les erreurs de validation
+export default function NouveauFormateur() {
   const [errors, setErrors] = useState({
     matricule: false,
     nom: false,
@@ -16,41 +17,48 @@ export default function Modification({ openNotification, handleClose, currentPag
     email: false,
   });
 
-  // Récupération des données initiales et de recherche
-  const dataInit = totalPages.datainit;
-  const dataRechercher = totalPages.rechercher;
-
-  // State pour gérer les erreurs serveur
+  const [api, contextHolder] = notification.useNotification();
+  const openNotification = () => {
+    api.open({
+      placement: "topRight",
+      message: 'Nouveau Formateur',
+      description: 'Formateur créé avec succès',
+      icon: (
+        <SmileOutlined
+          style={{
+            color: 'rgb(0, 167, 111)',
+          }}
+        />
+      ),
+      duration: 2 // Durée en secondes avant que la notification disparaisse
+    });
+    
+  };
   const [errorServer, setErrorServer] = useState({});
   const queryClient = useQueryClient();
 
-  // State pour stocker les données du formulaire
-  const [formData, setFormData] = useState(formateur);
+  const [formData, setFormData] = useState({
+    matricule: '',
+    nom: '',
+    prenom: '',
+    metier: '',
+    email: '',
+  });
 
-  // Mutation pour mettre à jour le formateur
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
-      await updateformateur(data);
+      await ajouterFormateur(data);
       clearFormData();
-      handleClose();
-      openNotification();
+      openNotification()
     } catch (error) {
       setErrorServer(error.response.data);
     }
   }, {
     onSuccess: () => {
-      // Invalidation des requêtes en cache après la mise à jour réussie
-      if (dataInit) {
-        queryClient.invalidateQueries(['liste-formateur', currentPage]);
-      }
-      if (dataRechercher) {
-        queryClient.invalidateQueries(['formateur-search-formateur', currentPageRechercher]);
-        setIsSearching(true);
-      }
+      queryClient.invalidateQueries(['liste-formateur',1]);
     },
   });
 
-  // Fonction pour valider les données du formulaire avec les regex
   function regexError(data) {
     let hasError = false;
 
@@ -92,19 +100,15 @@ export default function Modification({ openNotification, handleClose, currentPag
     return !hasError;
   }
 
-  // Soumission du formulaire
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-
-    // Vérification des erreurs de validation
+   
     if (!regexError(formData)) {
       return;
     }
-    // Mutation pour mettre à jour le formateur
     mutate(formData);
   };
 
-  // Effacer les données du formulaire
   const clearFormData = () => {
     setFormData({
       matricule: '',
@@ -113,11 +117,13 @@ export default function Modification({ openNotification, handleClose, currentPag
       metier: '',
       email: '',
     });
-    setErrorServer({});
+    setErrorServer({})
   };
 
   return (
-    <section className="formateur-section">
+    
+    <section className="parentFormateur">
+        {contextHolder}
       <div className="formateur">
         <h3 id="Text">Formateur</h3>
       </div>
@@ -126,12 +132,12 @@ export default function Modification({ openNotification, handleClose, currentPag
           <div className="info">
             <label className="label" htmlFor="matricule">
               <span>Matricule <span className="champsO">*</span></span>
+              {errorServer.existMat && <span className='existData'>{errorServer.existMat}</span>}
             </label>
             <input
               type="text"
               id="matricule"
               name="matricule"
-              readOnly
               placeholder="Matricule ..."
               className={`inputClass ${errors.matricule || errorServer.existMat ? 'is-invalid-error' : errors.matricule === false ? 'is-valid-confirm' : ''}`}
               value={formData.matricule}
@@ -159,14 +165,14 @@ export default function Modification({ openNotification, handleClose, currentPag
           <div className="info infoEmail">
             <label className="label" htmlFor="email">
               <span>Email <span className="champsO">*</span></span>
-              {errorServer.existeEMail && <span className='existData'>{errorServer.existeEMail}</span>}
+              {errorServer.existEmail && <span className='existData'>{errorServer.existEmail}</span>}
             </label>
             <input
               type="text"
               id="email"
               name="email"
               placeholder="Email ..."
-              className={`inputClass ${errors.email || errorServer.existeEMail ? 'is-invalid-error' : errors.email === false ? 'is-valid-confirm' : ''}`}
+              className={`inputClass ${errors.email || errorServer.existEmail ? 'is-invalid-error' : errors.email === false ? 'is-valid-confirm' : ''}`}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
@@ -213,3 +219,4 @@ export default function Modification({ openNotification, handleClose, currentPag
     </section>
   );
 }
+

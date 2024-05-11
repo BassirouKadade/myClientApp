@@ -1,31 +1,49 @@
-import {BrowserRouter,Routes,Route}  from 'react-router-dom'
-import Dashboard from './components/dashboard/Dashboard'
-import NavBarBottom from './components/dashboard/navbarbotom/NavBarBottom'
-import NouveauFormateur from './components/pages/formateur/ajout/NouveauFormateur'
-import ListeFormateurs from './components/pages/formateur/liste/ListeFormateurs'
-import { useAxiosErrorHandler } from './components/authservice/api'
-import DetailFormateur from './components/pages/formateur/detail/DetailFormateur'
-const baseUrl = import.meta.env.VITE_BASE_URL;
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { notification } from 'antd';
+import { useAxiosErrorHandler } from './components/authservice/api';
+import { SmileOutlined } from '@ant-design/icons';
+import ListeFilieres from './components/pages/filiere/liste/ListeFilieres';
+import Dashboard from './components/dashboard/Dashboard';
+import NavBarBottom from './components/dashboard/navbarbotom/NavBarBottom';
+import NouveauFormateur from './components/pages/formateur/ajout/NouveauFormateur';
+import ListeFormateurs from './components/pages/formateur/liste/ListeFormateurs';
+import DetailFormateur from './components/pages/formateur/detail/DetailFormateur';
 
 export default function App() {
-  const {error}=useAxiosErrorHandler()
+  const [api, contextHolder] = notification.useNotification();
+  const { error } = useAxiosErrorHandler();
 
-  if(error){
-      return "Errror !!!"
+  const openNotification = () => {
+    api.open({
+      message: 'Actualiser la page',
+      description: 'Si certaines mises à jour ne sont pas appliquées, veuillez actualiser la page. Merci!',
+      icon: <SmileOutlined style={{ color: 'rgb(10, 148, 102)' }} />,
+      duration: 5 // durée en secondes
+    });
+  };
+
+  useEffect(() => {
+      setTimeout(openNotification,3000)
+  }, []);
+
+  if (error) {
+    return "Erreur !!!";
   }
-  console.log(baseUrl)
+
   return (
     <BrowserRouter>
-            <Routes>
-                     <Route path="/" element={<Dashboard/>}>
-                             <Route path='dashboard' element={<NavBarBottom></NavBarBottom>}></Route>
-                             <Route path='formateur/ajouter-formateur' element={<NouveauFormateur></NouveauFormateur>}></Route>
-                             <Route path='formateur/liste-formateur' element={<ListeFormateurs></ListeFormateurs>}></Route>
-                             <Route path='formateur/detail-formateur/:id' element={<DetailFormateur></DetailFormateur>}></Route>
-                     </Route>
-            </Routes>
+      {contextHolder}
+      <Routes>
+        <Route path="/" element={<Dashboard />}>
+          <Route path="dashboard" element={<NavBarBottom />} />
+          <Route path="formateur/ajouter-formateur" element={<NouveauFormateur />} />
+          <Route path="formateur/liste-formateur" element={<ListeFormateurs />} />
+          <Route path="formateur/detail-formateur/:id" element={<DetailFormateur />} />
+          <Route path="filiere/liste-filiere" element={<ListeFilieres />} />
+        </Route>
+      </Routes>
+      
     </BrowserRouter>
-  )
+  );
 }
-
-   

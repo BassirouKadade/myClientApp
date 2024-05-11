@@ -4,7 +4,6 @@ import { CiSearch } from "react-icons/ci";
 import Modifcation from './Modifcation'; // Importation du composant de modification
 import Checkbox from '@mui/material/Checkbox';
 import DialogContext from '../../animation/DialogContext'; // Contexte de la boîte de dialogue
-import './listeFormateurs.css';
 import Button from '@mui/material/Button';
 import { Popconfirm } from 'antd';
 import { FaPlus } from "react-icons/fa6";
@@ -60,7 +59,7 @@ const timeTest = import.meta.env.VITE_TIME;
 
 // Déclaration du composant ListeFormateurs
 
-export default function ListeFormateurs() {
+export default function ListeFilieres() {
 
   // Gestion du menu contextuel
   const [anchorEl, setAnchorEl] = useState(null); // Élément d'ancrage du menu
@@ -384,13 +383,13 @@ function handleSort(referenceValue) {
   {contextHolder}
   
   {/* Conteneur pour la description et le bouton d'ajout de formateur */}
-  <article className='description-container'>
-    <span>Liste des formateurs de l ISTA BOUZNIKA</span>
+  <article className='description-container '>
+    <span className='bg-success'>Liste des filieres de ISTA BOUZNIKA</span>
     {/* Lien vers la page d'ajout d'un nouveau formateur */}
-    <Link to="/formateur/ajouter-formateur">
-      <Button>
+    <Link  to="/formateur/ajouter-formateur">
+      <Button style={{backgroundColor:"rgba(33, 43, 54, 0.856)"}}>
         <FaPlus className='plusFormateur' />
-        Nouveau Formateur
+        Nouvelle Filière
       </Button>
     </Link>
   </article>
@@ -642,4 +641,48 @@ function handleSort(referenceValue) {
   );
 }
 
+// import React, { useState } from 'react';
+// import { Button, Drawer } from 'antd';
 
+// const ListeFilieres = () => {
+//   const [open, setOpen] = useState(false);
+
+//   const showDrawer = () => {
+//     setOpen(true);
+//   };
+
+//   const onClose = () => {
+//     setOpen(false);
+//   };
+
+//   return (
+//     <>
+//       <Button type="primary" onClick={showDrawer}>
+//         Open
+//       </Button>
+//       <Drawer title="Basic Drawer" onClose={onClose} visible={open}>
+//         <form style={{ padding: '20px' }}>
+//           <article style={{ marginBottom: '15px' }}>
+//             <div style={{ marginBottom: '10px' }}>
+//               <label htmlFor="libelle">Libellé</label>
+//               <input type="text" id="libelle" style={{ marginLeft: '10px' }} />
+//             </div>
+//             <div>
+//               <label htmlFor="niveau">Niveau</label>
+//               <input type="text" id="niveau" style={{ marginLeft: '10px' }} />
+//             </div>
+//           </article>
+//           <article style={{ marginBottom: '15px' }}>
+//             <label htmlFor="description">Description</label>
+//             <textarea id="description" style={{ marginLeft: '10px', width: '100%', minHeight: '100px' }}></textarea>
+//           </article>
+//           <article>
+//             <button style={{ padding: '10px 20px', backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: '5px' }}>Ajouter</button>
+//           </article>
+//         </form>
+//       </Drawer>
+//     </>
+//   );
+// };
+
+// export default ListeFilieres;
