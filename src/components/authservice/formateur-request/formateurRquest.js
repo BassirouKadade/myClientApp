@@ -29,8 +29,12 @@ async function searchFormateurNext(page,data) {
         const response = await api.get(`/formateur/search-next-page?search=${data}&page=${page}`);
         return response;
     }
+
+async function listeTousFormateurNonPagine() {
+        const response = await api.get(`/formateur/all-formateurs`);
+        return response;
+    }
     
 
 
-
-export {searchFormateurNext,ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};
+export {listeTousFormateurNonPagine,searchFormateurNext,ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};

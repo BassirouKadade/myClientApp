@@ -26,11 +26,16 @@ import { notification } from 'antd';
 import { FaArrowUp } from "react-icons/fa6";
 import LinearProgress from '@mui/material/LinearProgress';
 import { PiExportBold } from "react-icons/pi";
+import {  Popover } from 'antd';
+import { listeTousFormateurNonPagine } from '../../../authservice/formateur-request/formateurRquest';
 import { Tooltip } from 'antd';
 import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonction pour supprimer un formateur
 import { MdModeEditOutline } from "react-icons/md";
 import { MdInfoOutline } from "react-icons/md";
 import { FaExclamationCircle } from "react-icons/fa";
+import {  Empty } from 'antd';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import IndexPDF from '../../pdf/IndexPDF';
 /*
    4 ----  Porbeleme de detaill
    5 ----  Ajout des modules users
@@ -86,7 +91,7 @@ export default function ListeFormateurs() {
   // État pour le nombre total de pages
   const [totalPages,setTotalePages]=useState({});
 
-  // Récupération de la liste des formateurs avec React Query
+  // Récupération de la liste des formateurs paginée avec React Query
   const { data, isLoading } = useQuery(['liste-formateur',currentPage], async () => {
     try {
       await new Promise(resolve=>setTimeout(resolve,timeTest))
@@ -377,12 +382,133 @@ function handleSort(referenceValue) {
   setCuurentValueTri(referenceValue)
 }
 
+const [openExport, setOpenExport] = useState(false);
+const hide = () => {
+  setOpenExport(false);
+};
+const handleOpenChangeex = (newOpen) => {
+  setOpenExport(newOpen);
+};
 
-  return (
+
+// Récupération de la liste des formateurs non paginée avec React Query
+  const { data:tousFormateursData, isLoading:isLoadingTousFormateursData } = useQuery(['liste-formateur-non-pagine',dataGlobal], async () => {
+    try {
+      const response = await listeTousFormateurNonPagine();
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  });
+
+// State pour définir les critères d'exportation
+const [dataToExport, setDataToExport] = useState({
+  matricule: true,
+  nom: true,
+  prenom: true,
+  metier: true,
+  tousFormateurs: false,
+});
+
+// Copie de la data globale pour manipulations
+const [dataToExportCopy, setDataToExportCopy] = useState([]);
+
+// Données finales à exporter
+const [dataFinalToExport, setDataFinalToExport] = useState([]);
+
+// Fonction pour gérer les changements des critères d'exportation
+function onHandleChangeExport(e) {
+  const { checked, name } = e.target;
+  setDataToExport(prev => ({ ...prev, [name]: checked }));
+}
+
+// Effet pour mettre à jour la copie de la data globale
+useEffect(() => {
+  if(!isLoadingTousFormateursData && dataToExport.tousFormateurs){
+    setDataToExportCopy(tousFormateursData); // Créer une copie de dataGlobal
+  }else{
+    setDataToExportCopy([...dataGlobal]); // Créer une copie de dataGlobal
+  }
+}, [dataGlobal,dataToExport.tousFormateurs]);
+
+// Effet pour filtrer et préparer les données à exporter en fonction des critères
+useEffect(() => {
+  const updatedDataCopy = dataToExportCopy.map(data => {
+    // Filtrer les champs en fonction des critères d'exportation
+    if (!dataToExport.matricule) {
+      data = { ...data, matricule: undefined };
+    }
+    if (!dataToExport.nom) {
+      data = { ...data, nom: undefined };
+    }
+    if (!dataToExport.prenom) {
+      data = { ...data, prenom: undefined };
+    }
+    if (!dataToExport.metier) {
+      data = { ...data, metier: undefined };
+    }
+    return data;
+  }).map(data => {
+    // Créer un nouvel objet avec les champs sélectionnés
+    const newData = {};
+    if (data.matricule) {
+      newData.matricule = data.matricule;
+    }
+    if (data.nom) {
+      newData.nom = data.nom;
+    }
+    if (data.prenom) {
+      newData.prenom = data.prenom;
+    }
+    if (data.metier) {
+      newData.metier = data.metier;
+    }
+    return newData;
+  }).filter(data => {
+    // Filtrer les données vides
+    return Object.keys(data).length > 0;
+  });
+
+  // Mettre à jour les données finales en fonction du critère "tousFormateurs"
+    setDataFinalToExport(updatedDataCopy);
+}, [dataToExport, dataToExportCopy]);
+
+const sssssss = [
+  {
+    sr: 1,
+    matricule: "A30A",
+    nom: "issa",
+    prenom:"ali",
+    email:"issa@gmail.com",
+    metier:"developpeur"
+  },
+  {
+    sr: 2,
+    matricule: "B13A",
+    nom: "Mohamed",
+    prenom:"moussa",
+    email:"Mohammed@gmail.com",
+    metier:"Analy"
+  },
+]
+
+
+
+
+// ********************************************
+// *****************************************
+//    LE RENDU
+//    ____________________________________________________
+
+// ------------------------------------------------------------------------
+
+
+return (
     <section className='formateurs-container'>
   {/* Affichage des notifications contextuelles */}
   {contextHolder}
-  
+
   {/* Conteneur pour la description et le bouton d'ajout de formateur */}
   <article className='description-container'>
     <span>Liste des formateurs de l ISTA BOUZNIKA</span>
@@ -417,16 +543,124 @@ function handleSort(referenceValue) {
     </div>
     <div className='filter-item-two'>
       {/* Bouton d'exportation de la liste en PDF */}
-      <Tooltip color={"blue"} key={"blue"} placement="top" title={<span className="wider-text">Exporter la liste en PDF</span>}>
-        <IconButton
-          aria-label="more"
-          id="long-button"
-          style={{ fontSize: "20px" }}
-          aria-haspopup="true"
-        >
-          <PiExportBold />
-        </IconButton>
-      </Tooltip>
+      <Tooltip color={"cyan"} key={"cyan"} placement="top" title={<span className="wider-text">Exporter la liste en PDF</span>}>
+  <Popover
+    placement='top'
+    content={
+      <div>
+        <Button className='button-popover' style={{color:"red",textTransform:"capitalize"}} onClick={hide}>Fermer</Button>
+        <Button  className='button-popover'  style={{color:"rgba(0, 167, 111, 0.897)",textTransform:"capitalize"}}>
+        <PDFDownloadLink style={{color:"rgba(0, 167, 111, 0.897)",textDecoration:"none"}} document={<IndexPDF data={dataFinalToExport?dataFinalToExport:[]} />} fileName="liste_formateurs.pdf">
+                     {({ blob, url, loading, error }) => (loading ? "Exporter" : 'Exporter')}
+       </PDFDownloadLink></Button>
+      </div>
+    }
+    title={
+      <section className='sectionPopover'>
+        <div className="popover-title">
+          <div className='titrePopover-div'>Spécifier les champs à exporter</div>
+          <div>
+            <span className='conatiner-input-popover'>
+              <Checkbox
+                {...label}
+                name='matricule'
+                checked={dataToExport.matricule}
+                onChange={onHandleChangeExport}
+                sx={{
+                  transform: "scale(0.8)",
+                  margin:0,
+                  color: "rgb(99, 115, 129)",
+                  padding:1,
+                  '&.Mui-checked': {
+                    color: "rgba(0, 167, 111, 0.897)",
+                  },
+                }}
+              /> <label htmlFor="Matricule">Matricule</label>
+            </span>
+            <span className='conatiner-input-popover'>
+              <Checkbox
+                {...label}
+                checked={dataToExport.nom}
+                name='nom'
+                onChange={onHandleChangeExport}
+                sx={{
+                  transform: "scale(0.8)",
+                  color: "rgb(99, 115, 129)",
+                  padding:1,
+                  '&.Mui-checked': {
+                    color: "rgba(0, 167, 111, 0.897)",
+                  },
+                }}
+              /><label htmlFor="Nom">Nom</label>
+            </span>
+            <span className='conatiner-input-popover'>  
+              <Checkbox
+                {...label}
+                checked={dataToExport.prenom}
+                name='prenom'
+                onChange={onHandleChangeExport}
+                sx={{
+                  transform: "scale(0.8)",
+                  color: "rgb(99, 115, 129)",
+                  padding:1,
+                  '&.Mui-checked': {
+                    color: "rgba(0, 167, 111, 0.897)",
+                  },
+                }}
+              /> <label htmlFor="Prénom">Prénom</label>
+            </span>
+            <span className='conatiner-input-popover'>
+              <Checkbox
+                {...label}
+                checked={dataToExport.metier}
+                name='metier'
+                onChange={onHandleChangeExport}
+                sx={{
+                  transform: "scale(0.8)",
+                  color: "rgb(99, 115, 129)",
+                  padding:1,
+                  '&.Mui-checked': {
+                    color: "rgba(0, 167, 111, 0.897)",
+                  },
+                }}
+              /> <label htmlFor="Métier">Métier</label>
+            </span>
+          </div>
+        </div>
+        <div className='conatiner-input-popover'>
+          <Checkbox
+            {...label}
+            name='tousFormateurs'
+            checked={dataToExport.tousFormateurs}
+            onChange={onHandleChangeExport}
+            sx={{
+              transform: "scale(0.8)",
+              color: "rgb(99, 115, 129)",
+              padding:1,
+              '&.Mui-checked': {
+                color: "rgba(0, 167, 111, 0.897)",
+              },
+            }}
+          />
+          <label htmlFor="">Tous les formateurs ?</label>
+        </div>
+      </section>
+    }
+    trigger="click"
+    open={openExport}
+    onOpenChange={handleOpenChangeex}
+  >
+    <IconButton
+      aria-label="more"
+      id="long-button"
+      style={{ fontSize: "20px" }}
+      aria-haspopup="true"
+    >
+      <PiExportBold />
+    </IconButton>
+  </Popover>
+</Tooltip>
+
     </div>
   </article>
   
@@ -564,10 +798,26 @@ function handleSort(referenceValue) {
         // Si les données sont chargées et qu'il y a des formateurs
         dataGlobal.length === 0 ?
           // Si aucune donnée n'est disponible
-          <div className="empty-container">
-            <FaExclamationCircle size="large" />
-            <p>Aucun résultat trouvé</p>
-          </div> :
+          // <div className="empty-container">
+          //   <FaExclamationCircle size="large" />
+          //   <p>Aucun résultat trouvé</p>
+          // </div>
+           <div className="empty-container">
+          <Empty
+          image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+          imageStyle={{
+            height: 60,
+          }}
+          description={
+            <span>
+              Aucun résultat trouvé 
+            </span>
+          }
+        >
+          <Link to="/formateur/ajouter-formateur"> <Button style={{color:"rgb(10, 148, 102)",fontSize:"12px", textTransform:'capitalize'}} type="primary">Ajouter maintenant</Button></Link>
+        </Empty>
+          </div>
+          :
           // Affichage des données des formateurs
           dataGlobal.map((formateur, index) => (
             <tr key={index}>
@@ -634,6 +884,8 @@ function handleSort(referenceValue) {
       </section>
   )}
 
+
+
   {/* Boîte de dialogue pour la modification d'un formateur */}
   <DialogContext setOpen={setOpen} open={open}>
     <Modifcation openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} formateur={formateurMod} />
@@ -641,5 +893,4 @@ function handleSort(referenceValue) {
 </section>
   );
 }
-
 

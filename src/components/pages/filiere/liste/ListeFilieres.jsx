@@ -30,6 +30,10 @@ import { supprimerformateur } from '../../../authservice/formateur-request/forma
 import { MdModeEditOutline } from "react-icons/md";
 import { MdInfoOutline } from "react-icons/md";
 import { FaExclamationCircle } from "react-icons/fa";
+import NouvelleFiliere from '../ajout/NouvelleFiliere';
+
+import { Drawer } from 'antd';
+
 /*
    4 ----  Porbeleme de detaill
    5 ----  Ajout des modules users
@@ -376,18 +380,32 @@ function handleSort(referenceValue) {
   setCuurentValueTri(referenceValue)
 }
 
+const [openAddFiliere, setOpenAddFiliere] = useState(false);
+
+const showDrawer = () => {
+  setOpenAddFiliere(true);
+};
+
+const onClose = () => {
+  setOpenAddFiliere(false);
+};
 
   return (
     <section className='formateurs-container'>
   {/* Affichage des notifications contextuelles */}
   {contextHolder}
-  
+
+  {/* Ajout des nuvelles filieres */}
+
+  <Drawer width={450}  onClose={onClose} visible={openAddFiliere}>
+          <NouvelleFiliere></NouvelleFiliere>
+  </Drawer>
   {/* Conteneur pour la description et le bouton d'ajout de formateur */}
   <article className='description-container '>
     <span className='bg-success'>Liste des filieres de ISTA BOUZNIKA</span>
     {/* Lien vers la page d'ajout d'un nouveau formateur */}
-    <Link  to="/formateur/ajouter-formateur">
-      <Button style={{backgroundColor:"rgba(33, 43, 54, 0.856)"}}>
+    <Link>
+      <Button onClick={showDrawer} style={{backgroundColor:"rgba(33, 43, 54, 0.856)"}}>
         <FaPlus className='plusFormateur' />
         Nouvelle Filière
       </Button>
@@ -637,52 +655,8 @@ function handleSort(referenceValue) {
   <DialogContext setOpen={setOpen} open={open}>
     <Modifcation openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} formateur={formateurMod} />
   </DialogContext>
+
 </section>
   );
 }
 
-// import React, { useState } from 'react';
-// import { Button, Drawer } from 'antd';
-
-// const ListeFilieres = () => {
-//   const [open, setOpen] = useState(false);
-
-//   const showDrawer = () => {
-//     setOpen(true);
-//   };
-
-//   const onClose = () => {
-//     setOpen(false);
-//   };
-
-//   return (
-//     <>
-//       <Button type="primary" onClick={showDrawer}>
-//         Open
-//       </Button>
-//       <Drawer title="Basic Drawer" onClose={onClose} visible={open}>
-//         <form style={{ padding: '20px' }}>
-//           <article style={{ marginBottom: '15px' }}>
-//             <div style={{ marginBottom: '10px' }}>
-//               <label htmlFor="libelle">Libellé</label>
-//               <input type="text" id="libelle" style={{ marginLeft: '10px' }} />
-//             </div>
-//             <div>
-//               <label htmlFor="niveau">Niveau</label>
-//               <input type="text" id="niveau" style={{ marginLeft: '10px' }} />
-//             </div>
-//           </article>
-//           <article style={{ marginBottom: '15px' }}>
-//             <label htmlFor="description">Description</label>
-//             <textarea id="description" style={{ marginLeft: '10px', width: '100%', minHeight: '100px' }}></textarea>
-//           </article>
-//           <article>
-//             <button style={{ padding: '10px 20px', backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: '5px' }}>Ajouter</button>
-//           </article>
-//         </form>
-//       </Drawer>
-//     </>
-//   );
-// };
-
-// export default ListeFilieres;

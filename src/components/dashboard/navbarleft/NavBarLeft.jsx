@@ -241,10 +241,6 @@ export default function NavBarLeft() {
                 {/* Sous-menu Filiere */}
                 <ul className={`ul-li-parent`}>
                   <li className={`ss ${open.filiere ? 'sshide' : ''}`}>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, filiere: 1 }))}>
-                      <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.filiere === 1 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Créer</span>
-                    </Link>
                     <Link to="filiere/liste-filiere" className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, filiere: 2 }))}>
                       <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.filiere === 2 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
                       <span className="text-a">Liste Filieres</span>
