@@ -9,7 +9,7 @@ import NavBarBottom from './components/dashboard/navbarbotom/NavBarBottom';
 import NouveauFormateur from './components/pages/formateur/ajout/NouveauFormateur';
 import ListeFormateurs from './components/pages/formateur/liste/ListeFormateurs';
 import DetailFormateur from './components/pages/formateur/detail/DetailFormateur';
-
+import ListeModule from './components/pages/module/liste/ListeModule';
 export default function App() {
   const [api, contextHolder] = notification.useNotification();
   const { error } = useAxiosErrorHandler();
@@ -41,6 +41,9 @@ export default function App() {
           <Route path="formateur/liste-formateur" element={<ListeFormateurs />} />
           <Route path="formateur/detail-formateur/:id" element={<DetailFormateur />} />
           <Route path="filiere/liste-filiere" element={<ListeFilieres />} />
+          <Route path="module/liste-module" element={<ListeModule />} />
+
+          
         </Route>
       </Routes>
       

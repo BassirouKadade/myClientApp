@@ -212,13 +212,9 @@ export default function NavBarLeft() {
                 {/* Sous-menu Module */}
                 <ul className={`ul-li-parent`}>
                   <li className={`ss ${open.module ? 'sshide' : ''}`}>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, module: 1 }))}>
-                      <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.module === 1 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Créer</span>
-                    </Link>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, module: 2 }))}>
+                    <Link to="module/liste-module" className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, module: 2 }))}>
                       <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.module === 2 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Liste</span>
+                      <span className="text-a">Liste Modules</span>
                     </Link>
                   </li>
                 </ul>

@@ -1,7 +1,8 @@
 import  { useEffect, useState } from 'react';
 import { AiOutlineReload } from "react-icons/ai";
 import { CiSearch } from "react-icons/ci";
-import Modifcation from './Modifcation'; // Importation du composant de modification
+import ModuleMod from './ModuleMod';
+// import Modifcation from './Modifcation'; // Importation du composant de modification
 import Checkbox from '@mui/material/Checkbox';
 import DialogContext from '../../animation/DialogContext'; // Contexte de la boîte de dialogue
 import './listeFormateurs.css';
@@ -15,8 +16,10 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Pagination from '@mui/material/Pagination';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { searchFormateurNext } from '../../../authservice/formateur-request/formateurRquest';
-import { listeFormateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonctions de requête pour récupérer la liste et rechercher des formateurs
+import { searchModuleNext } from '../../../authservice/module-request/moduleRequest';
+// import { searchFormateurNext } from '../../../authservice/formateur-request/formateurRquest';
+import { listeModule } from '../../../authservice/module-request/moduleRequest';
+// import { listeFormateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonctions de requête pour récupérer la liste et rechercher des formateurs
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { message } from 'antd';
@@ -25,22 +28,16 @@ import { SmileOutlined } from '@ant-design/icons';
 import { notification } from 'antd';
 import { FaArrowUp } from "react-icons/fa6";
 import LinearProgress from '@mui/material/LinearProgress';
-import { PiExportBold } from "react-icons/pi";
-import {  Popover } from 'antd';
-import { listeTousFormateurNonPagine } from '../../../authservice/formateur-request/formateurRquest';
-import { Tooltip } from 'antd';
-import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonction pour supprimer un formateur
+import { supprimerModule } from '../../../authservice/module-request/moduleRequest';
+// import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonction pour supprimer un formateur
 import { MdModeEditOutline } from "react-icons/md";
-import { MdInfoOutline } from "react-icons/md";
-import { FaExclamationCircle } from "react-icons/fa";
+
 import {  Empty } from 'antd';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import IndexPDF from '../../pdf/IndexPDF';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
-
-
+import NouveauModule from '../ajout/NouveauModule';
+import { Drawer } from 'antd';
 
 /*
    4 ----  Porbeleme de detaill
@@ -71,7 +68,7 @@ const timeTest = import.meta.env.VITE_TIME;
 
 // Déclaration du composant ListeFormateurs
 
-export default function ListeFormateurs() {
+export default function ListeModule() {
 
   // Gestion du menu contextuel
   const [anchorEl, setAnchorEl] = useState(null); // Élément d'ancrage du menu
@@ -98,10 +95,10 @@ export default function ListeFormateurs() {
   const [totalPages,setTotalePages]=useState({});
 
   // Récupération de la liste des formateurs paginée avec React Query
-  const { data, isLoading } = useQuery(['liste-formateur',currentPage], async () => {
+  const { data, isLoading } = useQuery(['liste-module',currentPage], async () => {
     try {
       await new Promise(resolve=>setTimeout(resolve,timeTest))
-      const response = await listeFormateur(currentPage);
+      const response = await listeModule(currentPage);
       return response.data;
     } catch (error) {
       console.error(error);
@@ -158,17 +155,17 @@ export default function ListeFormateurs() {
    // Mutation pour supprimer un formateur
    const { mutate } = useMutation(async (data) => {
      try {
-       await supprimerformateur(data);
+       await supprimerModule(data);
      } catch (error) {
        console.error(error);
      }
    }, {
      onSuccess: () => {
        if(totalPages.datainit){
-         queryClient.invalidateQueries(['liste-formateur', currentPage]);
+         queryClient.invalidateQueries(['liste-module', currentPage]);
       }
       if(totalPages.rechercher){
-         queryClient.invalidateQueries(['formateur-search-formateur',currentPageRechercher]);
+         queryClient.invalidateQueries(['search-module',currentPageRechercher]);
          setIsSearching(true)
       }
      }
@@ -192,7 +189,7 @@ export default function ListeFormateurs() {
        await new Promise(resolve=>setTimeout(resolve,timeTest))
        await mutate(nouvelleListe);
        setOpenDelete(false);
-       message.success('Le formateur a été supprimé avec succès', 2);
+       message.success('Le Module a été supprimé avec succès', 2);
        setDataToDelete([]);
      } catch (error) {
        console.error("Une erreur s'est produite lors de la suppression du formateur:", error);
@@ -210,14 +207,11 @@ export default function ListeFormateurs() {
   };
 
   // État pour stocker les données du formateur à modifier
-  const [formateurMod,setFormateurMod]=useState({})
-  const [formateurDetailId,setFormateurDtailId]=useState(null)
+  const [moduleMod,setModuleMod]=useState({})
 
   const options = [
     {
-       1: <Link style={{textDecoration:"none"}} to={`/formateur/detail-formateur/${formateurDetailId}`}> <div  style={{fontSize:"16px",color:"rgb(0, 167, 111)",width:"100%", display:"flex",alignItems:"center"}}> <MdInfoOutline style={{fontSize:"18px", marginRight:"7px"}}/>   Détail</div></Link>
-    },{
-       2:<div  style={{fontSize:"16px",display:"flex",alignItems:"center"}}> <MdModeEditOutline  style={{marginRight:"7px"}}/> Editér</div>
+       1:<div  style={{fontSize:"16px",display:"flex",alignItems:"center"}}> <MdModeEditOutline  style={{marginRight:"7px"}}/> Editér</div>
     }
   ];
 
@@ -226,8 +220,8 @@ export default function ListeFormateurs() {
   const openNotification = () => {
     api.open({
       placement: "bottomRight",
-      message: 'Modification Formateur',
-      description: 'Formateur est modifié avec succès',
+      message: 'Modification Module',
+      description: 'Module est modifié avec succès',
       icon: (
         <SmileOutlined
           style={{
@@ -246,12 +240,12 @@ export default function ListeFormateurs() {
   const [valInit, setValpInit] = useState('~~');
 
   const { isLoading: loadingDataSearch, data: dataSearchValue } = useQuery(
-    ['formateur-search-formateur', formDataSearch],
+    ['search-module', formDataSearch],
     async () => {
       try {
         // Ajouter une petite pause pour améliorer l'expérience utilisateur
         await new Promise(resolve => setTimeout(resolve, 500));
-        const response = await searchFormateurNext(currentPageRechercher, formDataSearch);
+        const response = await searchModuleNext(currentPageRechercher, formDataSearch);
         setValpInit(formDataSearch);
         return response.data;
       } catch (error) {
@@ -265,7 +259,7 @@ export default function ListeFormateurs() {
   );
 
   const handleRemoveCache = () => {
-    queryClient.removeQueries(['formateur-search-formateur',valInit]);
+    queryClient.removeQueries(['search-module',valInit]);
   };
 
   // Gestion de la recherche
@@ -327,53 +321,53 @@ export default function ListeFormateurs() {
 
   // Le tri des donnés .....
   const [order, setOrder] = useState('desc');
-const [overButtonTh, setOverButtonTh]=useState('matricule')
+const [overButtonTh, setOverButtonTh]=useState('code')
 
-const [currentValueTri,setCuurentValueTri]=useState('matricule')
+const [currentValueTri,setCuurentValueTri]=useState('code')
   function triData(referenceData) {
     switch(referenceData) {
-        case "nom":
+        case "code":
             setDataGlobal(prev => {
                 if (order === "desc") {
-                    return prev.sort((a, b) => b.nom.localeCompare(a.nom));
+                    return prev.sort((a, b) => b.codeModule.localeCompare(a.codeModule));
                 } else {
-                    return prev.sort((a, b) => a.nom.localeCompare(b.nom));
+                    return prev.sort((a, b) => a.codeModule.localeCompare(b.codeModule));
                 }
             });
             break;
-          case "prenom":
+          case "description":
               setDataGlobal(prev => {
                   if (order === "desc") {
-                      return prev.sort((a, b) => b.prenom.localeCompare(a.prenom));
+                      return prev.sort((a, b) => b.description.localeCompare(a.description));
                   } else {
-                      return prev.sort((a, b) => a.prenom.localeCompare(b.prenom));
+                      return prev.sort((a, b) => a.description.localeCompare(b.description));
                   }
               });
               break;
-              case "matricule":
+              case "masseHoraire":
                 setDataGlobal(prev => {
                     if (order === "desc") {
-                        return prev.sort((a, b) => b.matricule.localeCompare(a.matricule));
+                        return prev.sort((a, b) => b.masseHoraire - a.masseHoraire);
                     } else {
-                        return prev.sort((a, b) => a.matricule.localeCompare(b.matricule));
+                        return prev.sort((a, b) => a.masseHoraire - b.masseHoraire);
                     }
                 });
                 break;
-                case "metier":
+                case "MHP":
                 setDataGlobal(prev => {
                     if (order === "desc") {
-                        return prev.sort((a, b) => b.metier.localeCompare(a.metier));
+                        return prev.sort((a, b) => b.MHP - a.MHP);
                     } else {
-                        return prev.sort((a, b) => a.metier.localeCompare(b.metier));
+                        return prev.sort((a, b) => a.MHP - b.MHP);
                     }
                 });
                 break;
-                case "email":
+                case "MHD":
                   setDataGlobal(prev => {
                       if (order === "desc") {
-                          return prev.sort((a, b) => b.email.localeCompare(a.email));
+                          return prev.sort((a, b) => b.MHD - a.MHD);
                       } else {
-                          return prev.sort((a, b) => a.email.localeCompare(b.email));
+                          return prev.sort((a, b) => a.MHD - b.MHD);
                       }
                   });
                   break;
@@ -388,98 +382,6 @@ function handleSort(referenceValue) {
   setCuurentValueTri(referenceValue)
 }
 
-const [openExport, setOpenExport] = useState(false);
-const hide = () => {
-  setOpenExport(false);
-};
-const handleOpenChangeex = (newOpen) => {
-  setOpenExport(newOpen);
-};
-
-
-// Récupération de la liste des formateurs non paginée avec React Query
-  const { data:tousFormateursData, isLoading:isLoadingTousFormateursData } = useQuery(['liste-formateur-non-pagine',dataGlobal], async () => {
-    try {
-      const response = await listeTousFormateurNonPagine();
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  });
-
-// State pour définir les critères d'exportation
-const [dataToExport, setDataToExport] = useState({
-  matricule: true,
-  nom: true,
-  prenom: true,
-  metier: true,
-  tousFormateurs: false,
-});
-
-// Copie de la data globale pour manipulations
-const [dataToExportCopy, setDataToExportCopy] = useState([]);
-
-// Données finales à exporter
-const [dataFinalToExport, setDataFinalToExport] = useState([]);
-
-// Fonction pour gérer les changements des critères d'exportation
-function onHandleChangeExport(e) {
-  const { checked, name } = e.target;
-  setDataToExport(prev => ({ ...prev, [name]: checked }));
-}
-
-// Effet pour mettre à jour la copie de la data globale
-useEffect(() => {
-  if(!isLoadingTousFormateursData && dataToExport.tousFormateurs){
-    setDataToExportCopy(tousFormateursData); // Créer une copie de dataGlobal
-  }else{
-    setDataToExportCopy([...dataGlobal]); // Créer une copie de dataGlobal
-  }
-}, [dataGlobal,dataToExport.tousFormateurs]);
-
-// Effet pour filtrer et préparer les données à exporter en fonction des critères
-useEffect(() => {
-  const updatedDataCopy = dataToExportCopy.map(data => {
-    // Filtrer les champs en fonction des critères d'exportation
-    if (!dataToExport.matricule) {
-      data = { ...data, matricule: undefined };
-    }
-    if (!dataToExport.nom) {
-      data = { ...data, nom: undefined };
-    }
-    if (!dataToExport.prenom) {
-      data = { ...data, prenom: undefined };
-    }
-    if (!dataToExport.metier) {
-      data = { ...data, metier: undefined };
-    }
-    return data;
-  }).map(data => {
-    // Créer un nouvel objet avec les champs sélectionnés
-    const newData = {};
-    if (data.matricule) {
-      newData.matricule = data.matricule;
-    }
-    if (data.nom) {
-      newData.nom = data.nom;
-    }
-    if (data.prenom) {
-      newData.prenom = data.prenom;
-    }
-    if (data.metier) {
-      newData.metier = data.metier;
-    }
-    return newData;
-  }).filter(data => {
-    // Filtrer les données vides
-    return Object.keys(data).length > 0;
-  });
-
-  // Mettre à jour les données finales en fonction du critère "tousFormateurs"
-    setDataFinalToExport(updatedDataCopy);
-}, [dataToExport, dataToExportCopy]);
-
 
 
 const breadcrumbs = [
@@ -487,10 +389,21 @@ const breadcrumbs = [
     Dashboard
   </Link>,
   <Typography style={{fontSize:"15px"}} key="3" color="text.primary">
-    Liste des formateurs
+    Liste des modules
   </Typography>,
 ];
 
+
+
+const [openAddModule, setOpenAddModule] = useState(false);
+
+const showDrawer = () => {
+  setOpenAddModule(true);
+};
+
+const onClose = () => {
+  setOpenAddModule(false);
+};
 // ********************************************
 // *****************************************
 //    LE RENDU
@@ -504,6 +417,9 @@ return (
   {/* Affichage des notifications contextuelles */}
   {contextHolder}
 
+  <Drawer width={480}  style={{padding:"0 10px"}} onClose={onClose} visible={openAddModule}>
+          <NouveauModule></NouveauModule>
+  </Drawer>
   {/* Conteneur pour la description et le bouton d'ajout de formateur */}
   <article className='description-container'>
        <Breadcrumbs
@@ -513,10 +429,10 @@ return (
         {breadcrumbs}
       </Breadcrumbs>
     {/* Lien vers la page d'ajout d'un nouveau formateur */}
-    <Link to="/formateur/ajouter-formateur">
-      <Button>
+    <Link >
+      <Button  onClick={showDrawer} >
         <FaPlus className='plusFormateur' />
-        Nouveau Formateur
+        Ajouter Module
       </Button>
     </Link>
   </article>
@@ -524,8 +440,8 @@ return (
 
   {/* Conteneur pour les filtres de recherche et d'exportation */}
   <article className='filter-container'>
-    <div className="chargement">
-      <div className='filter-item-one'>
+    <div style={{width:"100%"}} className="chargement">
+      <div className='filter-item-one' style={{width:"100%"}}>
         {/* Champ de recherche avec bouton de rafraîchissement */}
         <CiSearch className='filter-search' />
         <input
@@ -534,133 +450,12 @@ return (
           onKeyUp={e => { if (e.key === 'Enter') handleSearch() }}
           className='filter-input'
           type="text"
-          placeholder='Rechercher un formateur ...'
+          placeholder='Rechercher un module ...'
         />
         <AiOutlineReload onClick={() => setActualiser(prev => !prev)} className="filter-button" />
       </div>
       {/* Affichage de la barre de progression lors du chargement de la recherche */}
-      {loadingDataSearch && <LinearProgress style={{ height: "0.14rem", borderRadius: "10px", width: "97%" }} color="success" />}
-    </div>
-    <div className='filter-item-two'>
-      {/* Bouton d'exportation de la liste en PDF */}
-      <Tooltip color={"cyan"} key={"cyan"} placement="top" title={<span className="wider-text">Exporter la liste en PDF</span>}>
-  <Popover
-    placement='top'
-    content={
-      <div>
-        <Button className='button-popover' style={{color:"red",textTransform:"capitalize"}} onClick={hide}>Fermer</Button>
-        <Button  className='button-popover'  style={{color:"rgba(0, 167, 111, 0.897)",textTransform:"capitalize"}}>
-        <PDFDownloadLink style={{color:"rgba(0, 167, 111, 0.897)",textDecoration:"none"}} document={<IndexPDF data={dataFinalToExport?dataFinalToExport:[]} />} fileName="liste_formateurs.pdf">
-                     {({ blob, url, loading, error }) => (loading ? "Exporter" : 'Exporter')}
-       </PDFDownloadLink></Button>
-      </div>
-    }
-    title={
-      <section className='sectionPopover'>
-        <div className="popover-title">
-          <div className='titrePopover-div'>Spécifier les champs à exporter</div>
-          <div>
-            <span className='conatiner-input-popover'>
-              <Checkbox
-                {...label}
-                name='matricule'
-                checked={dataToExport.matricule}
-                onChange={onHandleChangeExport}
-                sx={{
-                  transform: "scale(0.8)",
-                  margin:0,
-                  color: "rgb(99, 115, 129)",
-                  padding:1,
-                  '&.Mui-checked': {
-                    color: "rgba(0, 167, 111, 0.897)",
-                  },
-                }}
-              /> <label htmlFor="Matricule">Matricule</label>
-            </span>
-            <span className='conatiner-input-popover'>
-              <Checkbox
-                {...label}
-                checked={dataToExport.nom}
-                name='nom'
-                onChange={onHandleChangeExport}
-                sx={{
-                  transform: "scale(0.8)",
-                  color: "rgb(99, 115, 129)",
-                  padding:1,
-                  '&.Mui-checked': {
-                    color: "rgba(0, 167, 111, 0.897)",
-                  },
-                }}
-              /><label htmlFor="Nom">Nom</label>
-            </span>
-            <span className='conatiner-input-popover'>  
-              <Checkbox
-                {...label}
-                checked={dataToExport.prenom}
-                name='prenom'
-                onChange={onHandleChangeExport}
-                sx={{
-                  transform: "scale(0.8)",
-                  color: "rgb(99, 115, 129)",
-                  padding:1,
-                  '&.Mui-checked': {
-                    color: "rgba(0, 167, 111, 0.897)",
-                  },
-                }}
-              /> <label htmlFor="Prénom">Prénom</label>
-            </span>
-            <span className='conatiner-input-popover'>
-              <Checkbox
-                {...label}
-                checked={dataToExport.metier}
-                name='metier'
-                onChange={onHandleChangeExport}
-                sx={{
-                  transform: "scale(0.8)",
-                  color: "rgb(99, 115, 129)",
-                  padding:1,
-                  '&.Mui-checked': {
-                    color: "rgba(0, 167, 111, 0.897)",
-                  },
-                }}
-              /> <label htmlFor="Métier">Métier</label>
-            </span>
-          </div>
-        </div>
-        <div className='conatiner-input-popover'>
-          <Checkbox
-            {...label}
-            name='tousFormateurs'
-            checked={dataToExport.tousFormateurs}
-            onChange={onHandleChangeExport}
-            sx={{
-              transform: "scale(0.8)",
-              color: "rgb(99, 115, 129)",
-              padding:1,
-              '&.Mui-checked': {
-                color: "rgba(0, 167, 111, 0.897)",
-              },
-            }}
-          />
-          <label htmlFor="">Tous les formateurs ?</label>
-        </div>
-      </section>
-    }
-    trigger="click"
-    open={openExport}
-    onOpenChange={handleOpenChangeex}
-  >
-    <IconButton
-      aria-label="more"
-      id="long-button"
-      style={{ fontSize: "20px" }}
-      aria-haspopup="true"
-    >
-      <PiExportBold />
-    </IconButton>
-  </Popover>
-</Tooltip>
-
+      {loadingDataSearch && <LinearProgress style={{ height: "0.14rem", borderRadius: "10px", width: "100%" }} color="success" />}
     </div>
   </article>
   
@@ -690,7 +485,7 @@ return (
       {/* Boîte de dialogue de confirmation pour la suppression */}
       <Popconfirm
         title="Suppression"
-        description="Êtes-vous sûr de vouloir supprimer le formateur ?"
+        description="Êtes-vous sûr de vouloir supprimer le module ?"
         open={openDelete}
         placement='top'
         onConfirm={handleOk}
@@ -735,19 +530,19 @@ return (
           </th>
           {/* En-têtes de colonne pour le tri */}
           <th>
-            <button onMouseOver={() => setOverButtonTh("matricule")} className="buttonTH" onClick={() => handleSort('matricule')} >Matricule <FaArrowUp className={`${currentValueTri === "matricule" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "matricule" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("code")} className="buttonTH" onClick={() => handleSort('code')} >Code <FaArrowUp className={`${currentValueTri === "code" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "code" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("nom")} className="buttonTH" onClick={() => handleSort('nom')}>Nom <FaArrowUp className={`${currentValueTri === "nom" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "nom" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("description")} className="buttonTH" onClick={() => handleSort('description')}>Déscription <FaArrowUp className={`${currentValueTri === "description" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "description" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("prenom")} className="buttonTH" onClick={() => handleSort('prenom')}>Prénom <FaArrowUp className={`${currentValueTri === "prenom" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "prenom" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("masseHoraire")} className="buttonTH" onClick={() => handleSort('masseHoraire')}>Masse Horaire <FaArrowUp className={`${currentValueTri === "masseHoraire" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "masseHoraire" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("email")} className="buttonTH" onClick={() => handleSort('email')}>Email <FaArrowUp className={`${currentValueTri === "email" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "email" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("MHP")} className="buttonTH" onClick={() => handleSort('MHP')}>MHP <FaArrowUp className={`${currentValueTri === "MHP" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "MHP" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th style={{ borderRadius: "0 3px 0 0" }}>
-            <button onMouseOver={() => setOverButtonTh("metier")} className="buttonTH" onClick={() => handleSort('metier')}>Métier <FaArrowUp className={`${currentValueTri === "metier" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "metier" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("MHD")} className="buttonTH" onClick={() => handleSort('MHD')}>MHD <FaArrowUp className={`${currentValueTri === "MHD" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "MHD" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
         </tr>
       }
@@ -782,7 +577,7 @@ return (
         >
           {options.map((option,index) => (
             <MenuItem  key={option}  onClick={()=>{
-              if(index===1){
+              if(index===0){
                  handleClickOpen()
               }
               handleCloseMenu()
@@ -814,7 +609,6 @@ return (
             </span>
           }
         >
-          <Link to="/formateur/ajouter-formateur"> <Button style={{color:"rgb(10, 148, 102)",fontSize:"12px", textTransform:'capitalize'}} type="primary">Ajouter maintenant</Button></Link>
         </Empty>
           </div>
           :
@@ -837,11 +631,11 @@ return (
                   }}
                 />
               </td>
-              <td>{formateur.matricule}</td>
-              <td>{formateur.nom}</td>
-              <td>{formateur.prenom}</td>
-              <td>{formateur.email}</td>
-              <td>{formateur.metier}
+              <td>{formateur?.codeModule}</td>
+              <td>{formateur?.description}</td>
+              <td>{formateur?.masseHoraire}</td>
+              <td>{formateur?.MHP}</td>
+              <td>{formateur?.MHD}
                 <div className='edition'>
                   {/* Options de modification des formateurs */}
                   <IconButton
@@ -852,8 +646,7 @@ return (
                     aria-haspopup="true"
                     onClick={(event) => {
                       handleClick(event)
-                      setFormateurDtailId(formateur.id)
-                      setFormateurMod(formateur)
+                      setModuleMod(formateur)
                     }}
                   >
                     <MoreVertIcon style={{ fontSize: "16px" }} />
@@ -888,7 +681,7 @@ return (
 
   {/* Boîte de dialogue pour la modification d'un formateur */}
   <DialogContext setOpen={setOpen} open={open}>
-    <Modifcation openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} formateur={formateurMod} />
+    <ModuleMod openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} module={moduleMod} />
   </DialogContext>
 </section>
   );

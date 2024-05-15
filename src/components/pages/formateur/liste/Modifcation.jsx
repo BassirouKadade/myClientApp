@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import { REGEX_REST, REGEX_EMAIL } from '../../../authservice/regex';
 import './modification.css';
 import { useMutation, useQueryClient } from 'react-query';
-import AnimComponent from '../../animation/AnimComponent';
+import Progress from '../../animation/Progess';
 import { updateformateur } from '../../../authservice/formateur-request/formateurRquest';
 
 export default function Modification({ openNotification, handleClose, currentPages: { totalPages, setIsSearching, currentPageRechercher, currentPage }, formateur }) {
@@ -126,12 +126,13 @@ export default function Modification({ openNotification, handleClose, currentPag
           <div className="info">
             <label className="label" htmlFor="matricule">
               <span>Matricule <span className="champsO">*</span></span>
+              {errorServer.existeEMat && <span className='existData'>{errorServer.existeEMat}</span>}
+              
             </label>
             <input
               type="text"
               id="matricule"
               name="matricule"
-              readOnly
               placeholder="Matricule ..."
               className={`inputClass ${errors.matricule || errorServer.existMat ? 'is-invalid-error' : errors.matricule === false ? 'is-valid-confirm' : ''}`}
               value={formData.matricule}
@@ -156,7 +157,7 @@ export default function Modification({ openNotification, handleClose, currentPag
         </article>
 
         <article className="formaterChild">
-          <div className="info infoEmail">
+          <div style={{width:"100%"}} className="info infoEmail">
             <label className="label" htmlFor="email">
               <span>Email <span className="champsO">*</span></span>
               {errorServer.existeEMail && <span className='existData'>{errorServer.existeEMail}</span>}
@@ -206,7 +207,7 @@ export default function Modification({ openNotification, handleClose, currentPag
 
         <div className="formaterChild buttonF">
           <Button type="submit" className="buttonMbut articleButton" disabled={isLoading}>
-            {isLoading ? <AnimComponent borderColor={'white'} bord={2} padChild={4} padParent={11} /> : 'Ajouter'}
+            {isLoading ?  <Progress w={"25px"} h={"25px"} color={'white'} /> : 'Modifier'}
           </Button>
         </div>
       </form>

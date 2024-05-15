@@ -4,7 +4,7 @@ import { REGEX_REST, REGEX_EMAIL } from '../../../authservice/regex';
 import './nouveauFormateur.css';
 import { useMutation, useQueryClient } from 'react-query';
 import { ajouterFormateur } from '../../../authservice/formateur-request/formateurRquest';
-import AnimComponent from '../../animation/AnimComponent';
+import Progress from '../../animation/Progess';
 import { SmileOutlined } from '@ant-design/icons';
 import {  notification } from 'antd';
 
@@ -162,7 +162,7 @@ export default function NouveauFormateur() {
         </article>
 
         <article className="formaterChild">
-          <div className="info infoEmail">
+          <div style={{width:"100%"}} className="info infoEmail">
             <label className="label" htmlFor="email">
               <span>Email <span className="champsO">*</span></span>
               {errorServer.existEmail && <span className='existData'>{errorServer.existEmail}</span>}
@@ -212,7 +212,7 @@ export default function NouveauFormateur() {
 
         <div className="formaterChild buttonF">
           <Button type="submit" className="buttonMbut articleButton" disabled={isLoading}>
-            {isLoading ? <AnimComponent borderColor={'white'} bord={2} padChild={4} padParent={11} /> : 'Ajouter'}
+            {isLoading ? <Progress w={"25px"} h={"25px"} color={'white'} />  : 'Ajouter'}
           </Button>
         </div>
       </form>
