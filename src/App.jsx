@@ -10,6 +10,9 @@ import NouveauFormateur from './components/pages/formateur/ajout/NouveauFormateu
 import ListeFormateurs from './components/pages/formateur/liste/ListeFormateurs';
 import DetailFormateur from './components/pages/formateur/detail/DetailFormateur';
 import ListeModule from './components/pages/module/liste/ListeModule';
+import ListeSalle from './components/pages/salle/liste/ListeSalle';
+import DetailFiliere from './components/pages/filiere/detail/DetailFiliere';
+import ListeGroupe from './components/pages/groupe/liste/ListeGroupe';
 export default function App() {
   const [api, contextHolder] = notification.useNotification();
   const { error } = useAxiosErrorHandler();
@@ -42,8 +45,10 @@ export default function App() {
           <Route path="formateur/detail-formateur/:id" element={<DetailFormateur />} />
           <Route path="filiere/liste-filiere" element={<ListeFilieres />} />
           <Route path="module/liste-module" element={<ListeModule />} />
+          <Route path="salle/liste-salle" element={<ListeSalle />} />
+          <Route path="filiere/detail-filiere/:id" element={<DetailFiliere />} />
+          <Route path="groupe/liste-groupe" element={<ListeGroupe />} />
 
-          
         </Route>
       </Routes>
       

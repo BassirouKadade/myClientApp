@@ -1,7 +1,7 @@
 import  { useEffect, useState } from 'react';
 import { AiOutlineReload } from "react-icons/ai";
 import { CiSearch } from "react-icons/ci";
-import Modifcation from './Modifcation'; // Importation du composant de modification
+import FiliereMod from './FiliereMod';
 import Checkbox from '@mui/material/Checkbox';
 import DialogContext from '../../animation/DialogContext'; // Contexte de la boîte de dialogue
 import Button from '@mui/material/Button';
@@ -14,8 +14,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Pagination from '@mui/material/Pagination';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { searchFormateurNext } from '../../../authservice/formateur-request/formateurRquest';
-import { listeFormateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonctions de requête pour récupérer la liste et rechercher des formateurs
+import { searchFiliereNext } from '../../../authservice/filiere-request/filiereRequest';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { message } from 'antd';
@@ -25,15 +24,22 @@ import { notification } from 'antd';
 import { FaArrowUp } from "react-icons/fa6";
 import LinearProgress from '@mui/material/LinearProgress';
 import { PiExportBold } from "react-icons/pi";
+import {  Popover } from 'antd';
+import { listeTousFormateurNonPagine } from '../../../authservice/formateur-request/formateurRquest';
 import { Tooltip } from 'antd';
-import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonction pour supprimer un formateur
+import { supprimerFiliere } from '../../../authservice/filiere-request/filiereRequest';
 import { MdModeEditOutline } from "react-icons/md";
 import { MdInfoOutline } from "react-icons/md";
 import { FaExclamationCircle } from "react-icons/fa";
-import NouvelleFiliere from '../ajout/NouvelleFiliere';
-
+import {  Empty } from 'antd';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import IndexPDF from '../../pdf/IndexPDF';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
 import { Drawer } from 'antd';
-
+import NouvelleFiliere from '../ajout/NouvelleFiliere';
+import { listeFiliere } from '../../../authservice/filiere-request/filiereRequest';
 /*
    4 ----  Porbeleme de detaill
    5 ----  Ajout des modules users
@@ -89,11 +95,10 @@ export default function ListeFilieres() {
   // État pour le nombre total de pages
   const [totalPages,setTotalePages]=useState({});
 
-  // Récupération de la liste des formateurs avec React Query
-  const { data, isLoading } = useQuery(['liste-formateur',currentPage], async () => {
+  // Récupération de la liste des formateurs paginée avec React Query
+  const { data, isLoading } = useQuery(['liste-filiere',currentPage], async () => {
     try {
-      await new Promise(resolve=>setTimeout(resolve,timeTest))
-      const response = await listeFormateur(currentPage);
+      const response = await listeFiliere(currentPage);
       return response.data;
     } catch (error) {
       console.error(error);
@@ -150,17 +155,17 @@ export default function ListeFilieres() {
    // Mutation pour supprimer un formateur
    const { mutate } = useMutation(async (data) => {
      try {
-       await supprimerformateur(data);
+       await supprimerFiliere(data);
      } catch (error) {
        console.error(error);
      }
    }, {
      onSuccess: () => {
        if(totalPages.datainit){
-         queryClient.invalidateQueries(['liste-formateur', currentPage]);
+         queryClient.invalidateQueries(['liste-filiere', currentPage]);
       }
       if(totalPages.rechercher){
-         queryClient.invalidateQueries(['formateur-search-formateur',currentPageRechercher]);
+         queryClient.invalidateQueries(['filiere-search',currentPageRechercher]);
          setIsSearching(true)
       }
      }
@@ -181,10 +186,9 @@ export default function ListeFilieres() {
      setConfirmLoading(true);
  
      try {
-       await new Promise(resolve=>setTimeout(resolve,timeTest))
        await mutate(nouvelleListe);
        setOpenDelete(false);
-       message.success('Le formateur a été supprimé avec succès', 2);
+       message.success('La filière a été supprimée avec succès', 2);
        setDataToDelete([]);
      } catch (error) {
        console.error("Une erreur s'est produite lors de la suppression du formateur:", error);
@@ -207,7 +211,7 @@ export default function ListeFilieres() {
 
   const options = [
     {
-       1: <Link style={{textDecoration:"none"}} to={`/formateur/detail-formateur/${formateurDetailId}`}> <div  style={{fontSize:"16px",color:"rgb(0, 167, 111)",width:"100%", display:"flex",alignItems:"center"}}> <MdInfoOutline style={{fontSize:"18px", marginRight:"7px"}}/>   Détail</div></Link>
+       1: <Link style={{textDecoration:"none"}} to={`/filiere/detail-filiere/${formateurDetailId}`}> <div  style={{fontSize:"16px",color:"rgb(0, 167, 111)",width:"100%", display:"flex",alignItems:"center"}}> <MdInfoOutline style={{fontSize:"18px", marginRight:"7px"}}/>   Détail</div></Link>
     },{
        2:<div  style={{fontSize:"16px",display:"flex",alignItems:"center"}}> <MdModeEditOutline  style={{marginRight:"7px"}}/> Editér</div>
     }
@@ -218,8 +222,8 @@ export default function ListeFilieres() {
   const openNotification = () => {
     api.open({
       placement: "bottomRight",
-      message: 'Modification Formateur',
-      description: 'Formateur est modifié avec succès',
+      message: 'Modification Filière',
+      description: 'Filière est modifiée avec succès',
       icon: (
         <SmileOutlined
           style={{
@@ -238,12 +242,11 @@ export default function ListeFilieres() {
   const [valInit, setValpInit] = useState('~~');
 
   const { isLoading: loadingDataSearch, data: dataSearchValue } = useQuery(
-    ['formateur-search-formateur', formDataSearch],
+    ['filiere-search', formDataSearch],
     async () => {
       try {
         // Ajouter une petite pause pour améliorer l'expérience utilisateur
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const response = await searchFormateurNext(currentPageRechercher, formDataSearch);
+        const response = await searchFiliereNext(currentPageRechercher, formDataSearch);
         setValpInit(formDataSearch);
         return response.data;
       } catch (error) {
@@ -257,7 +260,7 @@ export default function ListeFilieres() {
   );
 
   const handleRemoveCache = () => {
-    queryClient.removeQueries(['formateur-search-formateur',valInit]);
+    queryClient.removeQueries(['filiere-search',valInit]);
   };
 
   // Gestion de la recherche
@@ -319,56 +322,38 @@ export default function ListeFilieres() {
 
   // Le tri des donnés .....
   const [order, setOrder] = useState('desc');
-const [overButtonTh, setOverButtonTh]=useState('matricule')
+const [overButtonTh, setOverButtonTh]=useState('code')
 
-const [currentValueTri,setCuurentValueTri]=useState('matricule')
+const [currentValueTri,setCuurentValueTri]=useState('code')
   function triData(referenceData) {
     switch(referenceData) {
-        case "nom":
+        case "code":
             setDataGlobal(prev => {
                 if (order === "desc") {
-                    return prev.sort((a, b) => b.nom.localeCompare(a.nom));
+                    return prev.sort((a, b) => b.code.localeCompare(a.code));
                 } else {
-                    return prev.sort((a, b) => a.nom.localeCompare(b.nom));
+                    return prev.sort((a, b) => a.code.localeCompare(b.code));
                 }
             });
             break;
-          case "prenom":
-              setDataGlobal(prev => {
-                  if (order === "desc") {
-                      return prev.sort((a, b) => b.prenom.localeCompare(a.prenom));
-                  } else {
-                      return prev.sort((a, b) => a.prenom.localeCompare(b.prenom));
-                  }
-              });
-              break;
-              case "matricule":
+              case "description":
                 setDataGlobal(prev => {
                     if (order === "desc") {
-                        return prev.sort((a, b) => b.matricule.localeCompare(a.matricule));
+                        return prev.sort((a, b) => b.description.localeCompare(a.description));
                     } else {
-                        return prev.sort((a, b) => a.matricule.localeCompare(b.matricule));
+                        return prev.sort((a, b) => a.description.localeCompare(b.description));
                     }
                 });
                 break;
-                case "metier":
+                case "niveau":
                 setDataGlobal(prev => {
                     if (order === "desc") {
-                        return prev.sort((a, b) => b.metier.localeCompare(a.metier));
+                        return prev.sort((a, b) => parseInt(b.description) - parseInt(a.description));
                     } else {
-                        return prev.sort((a, b) => a.metier.localeCompare(b.metier));
+                      return prev.sort((a, b) => parseInt(a.description) - parseInt(b.description));
                     }
                 });
                 break;
-                case "email":
-                  setDataGlobal(prev => {
-                      if (order === "desc") {
-                          return prev.sort((a, b) => b.email.localeCompare(a.email));
-                      } else {
-                          return prev.sort((a, b) => a.email.localeCompare(b.email));
-                      }
-                  });
-                  break;
         default:
             break;
     }
@@ -380,32 +365,53 @@ function handleSort(referenceValue) {
   setCuurentValueTri(referenceValue)
 }
 
-const [openAddFiliere, setOpenAddFiliere] = useState(false);
+
+const breadcrumbs = [
+  <Link style={{fontSize:"15px", textDecoration:"none",color:"rgb(99, 115, 119,0.7)"}}  key="1" color="inherit" to="/dashboard" >
+    Dashboard
+  </Link>,
+  <Typography style={{fontSize:"15px"}} key="3" color="text.primary">
+    Liste des filières
+  </Typography>,
+];
+
+
+const [openAddModule, setOpenAddModule] = useState(false);
 
 const showDrawer = () => {
-  setOpenAddFiliere(true);
+  setOpenAddModule(true);
 };
 
 const onClose = () => {
-  setOpenAddFiliere(false);
-};
+  setOpenAddModule(false);
+}
 
-  return (
+// ********************************************
+// *****************************************
+//    LE RENDU
+//    ____________________________________________________
+
+// ------------------------------------------------------------------------
+
+
+return (
     <section className='formateurs-container'>
   {/* Affichage des notifications contextuelles */}
   {contextHolder}
-
-  {/* Ajout des nuvelles filieres */}
-
-  <Drawer width={450}  onClose={onClose} visible={openAddFiliere}>
+  <Drawer width={480}  style={{padding:"0 10px"}} onClose={onClose} visible={openAddModule}>
           <NouvelleFiliere></NouvelleFiliere>
   </Drawer>
   {/* Conteneur pour la description et le bouton d'ajout de formateur */}
-  <article className='description-container '>
-    <span className='bg-success'>Liste des filieres de ISTA BOUZNIKA</span>
+  <article className='description-container'>
+       <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumb"
+      >
+        {breadcrumbs}
+      </Breadcrumbs>
     {/* Lien vers la page d'ajout d'un nouveau formateur */}
     <Link>
-      <Button onClick={showDrawer} style={{backgroundColor:"rgba(33, 43, 54, 0.856)"}}>
+      <Button onClick={showDrawer}>
         <FaPlus className='plusFormateur' />
         Nouvelle Filière
       </Button>
@@ -415,8 +421,8 @@ const onClose = () => {
 
   {/* Conteneur pour les filtres de recherche et d'exportation */}
   <article className='filter-container'>
-    <div className="chargement">
-      <div className='filter-item-one'>
+    <div  style={{width:"100%"}} className="chargement">
+      <div style={{width:"100%"}} className='filter-item-one'>
         {/* Champ de recherche avec bouton de rafraîchissement */}
         <CiSearch className='filter-search' />
         <input
@@ -425,25 +431,12 @@ const onClose = () => {
           onKeyUp={e => { if (e.key === 'Enter') handleSearch() }}
           className='filter-input'
           type="text"
-          placeholder='Rechercher un formateur ...'
+          placeholder='Rechercher une filière ...'
         />
         <AiOutlineReload onClick={() => setActualiser(prev => !prev)} className="filter-button" />
       </div>
       {/* Affichage de la barre de progression lors du chargement de la recherche */}
       {loadingDataSearch && <LinearProgress style={{ height: "0.14rem", borderRadius: "10px", width: "97%" }} color="success" />}
-    </div>
-    <div className='filter-item-two'>
-      {/* Bouton d'exportation de la liste en PDF */}
-      <Tooltip color={"blue"} key={"blue"} placement="top" title={<span className="wider-text">Exporter la liste en PDF</span>}>
-        <IconButton
-          aria-label="more"
-          id="long-button"
-          style={{ fontSize: "20px" }}
-          aria-haspopup="true"
-        >
-          <PiExportBold />
-        </IconButton>
-      </Tooltip>
     </div>
   </article>
   
@@ -467,7 +460,7 @@ const onClose = () => {
         />
         <span style={{ fontSize: "14px" }}> {
           dataToDelete.filter((formateur) => formateur.delete === true).length
-        } <span> Formateurs sélectionnés</span> </span>
+        } <span> Filière sélectionnées</span> </span>
       </span>
 
       {/* Boîte de dialogue de confirmation pour la suppression */}
@@ -518,19 +511,13 @@ const onClose = () => {
           </th>
           {/* En-têtes de colonne pour le tri */}
           <th>
-            <button onMouseOver={() => setOverButtonTh("matricule")} className="buttonTH" onClick={() => handleSort('matricule')} >Matricule <FaArrowUp className={`${currentValueTri === "matricule" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "matricule" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("code")} className="buttonTH" onClick={() => handleSort('code')} >Code <FaArrowUp className={`${currentValueTri === "code" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "code" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("nom")} className="buttonTH" onClick={() => handleSort('nom')}>Nom <FaArrowUp className={`${currentValueTri === "nom" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "nom" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("description")} className="buttonTH" onClick={() => handleSort('description')}>Description <FaArrowUp className={`${currentValueTri === "description" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "description" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("prenom")} className="buttonTH" onClick={() => handleSort('prenom')}>Prénom <FaArrowUp className={`${currentValueTri === "prenom" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "prenom" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
-          </th>
-          <th>
-            <button onMouseOver={() => setOverButtonTh("email")} className="buttonTH" onClick={() => handleSort('email')}>Email <FaArrowUp className={`${currentValueTri === "email" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "email" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
-          </th>
-          <th style={{ borderRadius: "0 3px 0 0" }}>
-            <button onMouseOver={() => setOverButtonTh("metier")} className="buttonTH" onClick={() => handleSort('metier')}>Métier <FaArrowUp className={`${currentValueTri === "metier" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "metier" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("niveau")} className="buttonTH" onClick={() => handleSort('niveau')}>Niveau <FaArrowUp className={`${currentValueTri === "niveau" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "niveau" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
         </tr>
       }
@@ -581,10 +568,26 @@ const onClose = () => {
         // Si les données sont chargées et qu'il y a des formateurs
         dataGlobal.length === 0 ?
           // Si aucune donnée n'est disponible
-          <div className="empty-container">
-            <FaExclamationCircle size="large" />
-            <p>Aucun résultat trouvé</p>
-          </div> :
+          // <div className="empty-container">
+          //   <FaExclamationCircle size="large" />
+          //   <p>Aucun résultat trouvé</p>
+          // </div>
+           <div className="empty-container">
+          <Empty
+          image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+          imageStyle={{
+            height: 60,
+          }}
+          description={
+            <span>
+              Aucun résultat trouvé 
+            </span>
+          }
+        >
+          <Link to="/formateur/ajouter-formateur"> <Button style={{color:"rgb(10, 148, 102)",fontSize:"12px", textTransform:'capitalize'}} type="primary">Ajouter maintenant</Button></Link>
+        </Empty>
+          </div>
+          :
           // Affichage des données des formateurs
           dataGlobal.map((formateur, index) => (
             <tr key={index}>
@@ -604,11 +607,9 @@ const onClose = () => {
                   }}
                 />
               </td>
-              <td>{formateur.matricule}</td>
-              <td>{formateur.nom}</td>
-              <td>{formateur.prenom}</td>
-              <td>{formateur.email}</td>
-              <td>{formateur.metier}
+              <td>{formateur?.code}</td>
+              <td>{formateur?.description}</td>
+              <td>{formateur?.niveau&&parseInt(formateur?.niveau)==1?"1 érè Année":"2 eme Année"}
                 <div className='edition'>
                   {/* Options de modification des formateurs */}
                   <IconButton
@@ -651,11 +652,12 @@ const onClose = () => {
       </section>
   )}
 
+
+
   {/* Boîte de dialogue pour la modification d'un formateur */}
   <DialogContext setOpen={setOpen} open={open}>
-    <Modifcation openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} formateur={formateurMod} />
+    <FiliereMod openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} filiere={formateurMod} />
   </DialogContext>
-
 </section>
   );
 }

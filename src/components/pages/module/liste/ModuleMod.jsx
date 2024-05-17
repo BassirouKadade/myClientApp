@@ -195,7 +195,7 @@ export default function ModuleMod({ openNotification, handleClose, currentPages:
         </div>
         <div className="moduleChild">
           <Button type="submit" className="buttonMbut articleButton" disabled={isLoading}>
-            {isLoading ? <Progress w={"25px"} h={"25px"} color={'white'} /> : 'Modifier'}
+            {isLoading ? <Progress w={"25px"} h={"25px"} color={'white'} /> : 'Mettre à jour'}
           </Button>
         </div>
       </form>

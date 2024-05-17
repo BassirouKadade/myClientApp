@@ -1,60 +1,54 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Button from '@mui/material/Button';
 import { REGEX_REST } from '../../../authservice/regex';
-import './nouvelleFilieres.css';
+import './modification.css';
 import { useMutation, useQueryClient } from 'react-query';
-import { ajouterFiliere } from '../../../authservice/filiere-request/filiereRequest';
+import { updateFiliere } from '../../../authservice/filiere-request/filiereRequest';
 import Progress from '../../animation/Progess';
-import { SmileOutlined } from '@ant-design/icons';
-import { notification } from 'antd';
 
-export default function NouvelleFiliere() {
+export default function FiliereMod({ openNotification, handleClose, currentPages: { totalPages, setIsSearching, currentPageRechercher, currentPage }, filiere }) {
+  // State pour gérer les erreurs de validation
   const [errors, setErrors] = useState({
     code: false,
     niveau: false,
     description: false,
   });
 
-  const [api, contextHolder] = notification.useNotification();
-  const openNotification = () => {
-    api.open({
-      placement: "topLeft",
-      message: 'Nouvelle Filière', // Modification du message de notification
-      description: 'Filière créée avec succès', // Modification de la description de notification
-      icon: (
-        <SmileOutlined
-          style={{
-            color: 'rgb(0, 167, 111)',
-          }}
-        />
-      ),
-      duration: 2 // Durée en secondes avant que la notification disparaisse
-    });
-  };
+  // Récupération des données initiales et de recherche
+  const dataInit = totalPages.datainit;
+  const dataRechercher = totalPages.rechercher;
 
+  // State pour gérer les erreurs serveur
   const [errorServer, setErrorServer] = useState({});
   const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState({
-    code: '',
-    niveau: '',
-    description: '',
-  });
+  // State pour stocker les données du formulaire
+  const [formData, setFormData] = useState(filiere);
 
+  // Mutation pour mettre à jour la filière
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
-      await ajouterFiliere(data); // Utilisation de la fonction de requête de création de filière
+      await updateFiliere(data);
       clearFormData();
+      handleClose();
       openNotification();
     } catch (error) {
       setErrorServer(error.response.data);
     }
   }, {
     onSuccess: () => {
-      queryClient.invalidateQueries(['liste-filiere',1]); // Invalidations des requêtes relatives à la liste des filières
+      // Invalidation des requêtes en cache après la mise à jour réussie
+      if (dataInit) {
+        queryClient.invalidateQueries(['liste-filiere', currentPage]);
+      }
+      if (dataRechercher) {
+        queryClient.invalidateQueries(['filiere-search', currentPageRechercher]);
+        setIsSearching(true);
+      }
     },
   });
 
+  // Fonction pour valider les données du formulaire avec les regex
   function regexError(data) {
     let hasError = false;
 
@@ -65,14 +59,14 @@ export default function NouvelleFiliere() {
       setErrors(prev => ({ ...prev, code: false }));
     }
 
-    if (!REGEX_REST.test(data.niveau)) {
+    if (!data.niveau) {
       setErrors(prev => ({ ...prev, niveau: true }));
       hasError = true;
     } else {
       setErrors(prev => ({ ...prev, niveau: false }));
     }
 
-    if (!REGEX_REST.test(data.description)) {
+    if (!data.description) {
       setErrors(prev => ({ ...prev, description: true }));
       hasError = true;
     } else {
@@ -82,15 +76,19 @@ export default function NouvelleFiliere() {
     return !hasError;
   }
 
-  const handleSubmit = async e => {
+  // Soumission du formulaire
+  const handleSubmit = async (e) => {
     e.preventDefault();
-   
+
+    // Vérification des erreurs de validation
     if (!regexError(formData)) {
       return;
     }
+    // Mutation pour mettre à jour la filière
     mutate(formData);
   };
 
+  // Effacer les données du formulaire
   const clearFormData = () => {
     setFormData({
       code: '',
@@ -101,15 +99,14 @@ export default function NouvelleFiliere() {
   };
 
   return (
-    <section className="parentFiliere"> {/* Modification de la classe parente */}
-        {contextHolder}
-      <div className="filiere"> {/* Modification de la classe du div */}
+    <section  style={{width:"600px",padding:"0 30px"}} className="parentFiliere">
+      <div className="filiere">
         <h3 id="Text">Filière</h3>
       </div>
-      <form onSubmit={handleSubmit} className="filiere"> {/* Modification de la classe du formulaire */}
-        <article className="filiereChild"> {/* Modification de la classe de l'article */}
+      <form onSubmit={handleSubmit} className="filiere">
+        <article className="filiereChild">
           <div className="info">
-            <label className="label" htmlFor="code"> {/* Modification du htmlFor et du label */}
+            <label className="label" htmlFor="code">
               <span>Code <span className="champsO">*</span></span>
               {errorServer.existCode && <span className='existData'>{errorServer.existCode}</span>}
             </label>
@@ -125,45 +122,42 @@ export default function NouvelleFiliere() {
           </div>
 
           <div className="info">
-            <label className="label" htmlFor="niveau"> {/* Modification du htmlFor et du label */}
+            <label className="label" htmlFor="niveau">
               <span>Niveau <span className="champsO">*</span></span>
             </label>
             <select
-              type="text"
-              id="niveau" 
+              id="niveau"
               name="niveau"
-              placeholder="Niveau ..."
               className={`inputClass ${errors.niveau ? 'is-invalid-error' : errors.niveau === false ? 'is-valid-confirm' : ''}`}
               value={formData.niveau}
               onChange={(e) => setFormData({ ...formData, niveau: e.target.value })}
             >
-                 <option value="">Niveau</option>
-                <option value="1">1ère Année</option>
-                <option value="2">2eme Année</option>
+              <option value="">Niveau</option>
+              <option value="1">1ère Année</option>
+              <option value="2">2ème Année</option>
             </select>
           </div>
         </article>
 
-        <article className="filiereChild"> {/* Modification de la classe de l'article */}
-          <div className="info infoDescription" style={{width:"100%"}}> {/* Modification de la classe de div */}
-            <label className="label" htmlFor="description"> {/* Modification du htmlFor et du label */}
-            <span>Description <span className="champsO">*</span></span>
-              {errorServer.existeDescription && <span className='existData'>{errorServer.existeDescription}</span>}
+        <article className="filiereChild">
+          <div className="info infoDescription" style={{width:"100%"}}>
+            <label className="label" htmlFor="description">
+              <span>Description <span className="champsO">*</span></span>
+              {errorServer.existDescription && <span className='existData'>{errorServer.existDescription}</span>}
             </label>
             <textarea
-              type="text"
-              id="description" 
+              id="description"
               name="description"
               placeholder="Description ..."
-              className={`inputClass ${errors.description || errorServer.existeDescription ? 'is-invalid-error' : errors.description === false ? 'is-valid-confirm' : ''}`}
+              className={`inputClass ${errors.description || errorServer.existDescription ? 'is-invalid-error' : errors.description === false ? 'is-valid-confirm' : ''}`}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
         </article>
-        <div className="filiereChild buttonF"> {/* Modification de la classe de div */}
+        <div className="filiereChild buttonF">
           <Button type="submit" className="buttonMbut articleButton" disabled={isLoading}>
-            {isLoading ? <Progress w={"25px"} h={"25px"} color={'white'} />  : 'Ajouter'}
+            {isLoading ? <Progress w={"25px"} h={"25px"} color={'white'} />  : 'Mettre à jour'}
           </Button>
         </div>
       </form>

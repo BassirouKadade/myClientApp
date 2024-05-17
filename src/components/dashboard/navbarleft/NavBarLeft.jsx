@@ -183,13 +183,9 @@ export default function NavBarLeft() {
                 {/* Sous-menu Salle */}
                 <ul className={`ul-li-parent`}>
                   <li className={`ss ${open.salle ? 'sshide' : ''}`}>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, salle: 1 }))}>
-                      <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.salle === 1 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Créer</span>
-                    </Link>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, salle: 2 }))}>
+                    <Link to={"salle/liste-salle"} className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, salle: 2 }))}>
                       <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.salle === 2 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Liste</span>
+                      <span className="text-a">Liste Salles</span>
                     </Link>
                   </li>
                 </ul>
@@ -262,13 +258,9 @@ export default function NavBarLeft() {
                 {/* Sous-menu Groupe */}
                 <ul className={`ul-li-parent`}>
                   <li className={`ss ${open.groupe ? 'sshide' : ''}`}>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, groupe: 1 }))}>
-                      <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.groupe === 1 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Créer</span>
-                    </Link>
-                    <Link className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, groupe: 2 }))}>
+                    <Link to={"groupe/liste-groupe"} className="a-ul-li-parent" onClick={() => setOverItems(prev => ({ ...prev, groupe: 2 }))}>
                       <VscDebugBreakpointData style={{ fontSize: '10px', color: overItems.groupe === 2 ? 'rgb(0, 167, 111)' : '' }} className="point-a" />
-                      <span className="text-a">Liste</span>
+                      <span className="text-a">Liste Groupes</span>
                     </Link>
                   </li>
                 </ul>

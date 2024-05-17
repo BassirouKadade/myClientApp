@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './detail.css';
 import { useParams, Link } from 'react-router-dom';
 import { message, Popconfirm } from 'antd';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,16 +11,16 @@ import Typography from '@mui/material/Typography';
 import { CiSearch } from 'react-icons/ci'; // Make sure to install react-icons
 import { AiOutlineReload } from 'react-icons/ai'; // Make sure to install react-icons
 import LinearProgress from '@mui/material/LinearProgress';
-import {getInfosFormateur, ajouterModuleFormateur,deleteModuleFormateur, listeTousModuleNonPagine } from '../../../authservice/module-request/moduleRequest';
+import { listeTousModuleNonPagineFiliere } from '../../../authservice/filiere-request/filiereRequest';
+import { getInfoFiliere,modulesFiliere,deleteModuleFiliere, ajouterModuleFiliere } from '../../../authservice/filiere-request/filiereRequest';
 import { useQuery ,useQueryClient, useMutation} from 'react-query';
 import { Avatar, Box, keyframes } from '@chakra-ui/react';
 import {  Empty } from 'antd';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import Progress from '../../animation/Progess';
-import { modulesFormateur } from '../../../authservice/module-request/moduleRequest';
 import { Alert, Space } from 'antd';
-export default function DetailFormateur() {
+export default function DetailFiliere() {
     const size = '76px';
     const color = 'teal';
 
@@ -48,9 +47,9 @@ export default function DetailFormateur() {
     const [loadingDataSearch, setLoadingDataSearch] = useState(false);
     const [currentFormateur,setCurrentFormateur]=useState({})
   const [errorServer,setErrorServer]=useState({})
-    const { data: getInfoFormateur, isLoading: isLoadingGetFormateur } = useQuery(['get-infoformateur',id], async () => {
+    const { data: getInfoFormateur, isLoading: isLoadingGetFormateur } = useQuery(['get-infofiliere',id], async () => {
         try {
-            const response = await getInfosFormateur(id);
+            const response = await getInfoFiliere(id);
             return response.data;
         } catch (error) {
             console.error(error);
@@ -67,9 +66,9 @@ export default function DetailFormateur() {
     }, [getInfoFormateur, isLoadingGetFormateur]);
 
   
-    const { data: tousModulesData, isLoading: isLoadingTousModuleData } = useQuery(['all-modules',id], async () => {
+    const { data: tousModulesData, isLoading: isLoadingTousModuleData } = useQuery(['all-module-filieres-not-existe',id], async () => {
         try {
-            const response = await listeTousModuleNonPagine(id);
+            const response = await listeTousModuleNonPagineFiliere(id);
             return response.data;
         } catch (error) {
             console.error(error);
@@ -83,9 +82,9 @@ export default function DetailFormateur() {
         }
     }, [tousModulesData, isLoadingTousModuleData]);
 
-    const { data: moduleFormateur, isLoading: isLoadingModuleFormateur } = useQuery(['module-formateur',id], async () => {
+    const { data: moduleFormateur, isLoading: isLoadingModuleFormateur } = useQuery(['module-filiere-existe',id], async () => {
         try {
-            const response = await modulesFormateur(id);
+            const response = await modulesFiliere(id);
             return response.data;
         } catch (error) {
             console.error(error);
@@ -106,10 +105,10 @@ export default function DetailFormateur() {
 
      const [idModuleSupprimer,setIdModuleSupprimer]=useState(null);
 
-    const { mutate:supprimerModuelFormateur, isLoading: isSupprimerModuleFormateur } = useMutation(
+    const { mutate:supprimerModuelFiliere } = useMutation(
         async (data) => {
           try {
-            await deleteModuleFormateur(data);
+            await deleteModuleFiliere(data);
           } catch (error) {
             console.error("Erreur lors de l'ajout du module pour le formateur:", error);
             throw new Error("Échec de l'ajout du module pour le formateur.");
@@ -117,8 +116,8 @@ export default function DetailFormateur() {
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries('module-formateur');
-            queryClient.invalidateQueries('all-modules');
+            queryClient.invalidateQueries('module-filiere-existe');
+            queryClient.invalidateQueries('all-module-filieres-not-existe');
           },
         }
       );
@@ -127,9 +126,10 @@ export default function DetailFormateur() {
         setConfirmLoading(true);
         try {
             setConfirmLoading(true);
-            await supprimerModuelFormateur({ idModule:idModuleSupprimer, idFormateur:id });
+            // alert(JSON.stringify({ idModule:idModuleSupprimer, idFiliere:id }))
+            await supprimerModuelFiliere({ idModule:idModuleSupprimer, idFiliere:id });
             setOpenDelete(false);
-            message.success('Le module a été supprimé avec succès', 2);
+            message.success('La filière a été supprimée avec succès', 2);
         } catch (error) {
             console.error("Une erreur s'est produite lors de la suppression du formateur:", error);
             message.error("Une erreur s'est produite lors de la suppression du formateur", 2);
@@ -162,11 +162,11 @@ export default function DetailFormateur() {
         <Link style={{ fontSize: "15px", textDecoration: "none", color: "rgb(99, 115, 119,0.7)" }} key="1" to="/dashboard">
             Dashboard
         </Link>,
-        <Link style={{ fontSize: "15px", textDecoration: "none", color: "rgb(99, 115, 119,0.7)" }} key="2" to="/formateur/liste-formateur">
-            Formateurs
+        <Link style={{ fontSize: "15px", textDecoration: "none", color: "rgb(99, 115, 119,0.7)" }} key="2" to="/filiere/liste-filiere">
+          Filière
         </Link>,
         <Typography style={{ fontSize: "15px" }} key="3" color="text.primary">
-            {currentFormateur.nom}  {currentFormateur.prenom}
+            {currentFormateur.code}
         </Typography>,
     ];
 
@@ -174,7 +174,7 @@ export default function DetailFormateur() {
 const { mutate, isLoading: isAddingModule } = useMutation(
     async (data) => {
       try {
-        await ajouterModuleFormateur(data);
+        await ajouterModuleFiliere(data);
       } catch (error) {
         console.error("Erreur lors de l'ajout du module pour le formateur:", error);
         throw new Error("Échec de l'ajout du module pour le formateur.");
@@ -182,8 +182,8 @@ const { mutate, isLoading: isAddingModule } = useMutation(
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries('all-modules');
-        queryClient.invalidateQueries('module-formateur');
+        queryClient.invalidateQueries('all-module-filieres-not-existe');
+        queryClient.invalidateQueries('module-filiere-existe');
       },
     }
   );
@@ -193,25 +193,25 @@ const { mutate, isLoading: isAddingModule } = useMutation(
   // Fonction pour ajouter un module pour un formateur
   function ajouterModule(idModule) {
     setModuleEncours(idModule)
-    mutate({ idModule, idFormateur:id });
+    mutate({ idModule, idFiliere:id });
   }
   
-  if(errorServer?.errorNotExiste){ 
-      return <Space
-      direction="vertical"
-      style={{
-        width: '100%',
-      }}
-    >
-     <Alert
-  message="Tentative de Violation du Site"
-  description="Votre action a été bloquée car elle constitue une violation de nos règles."
-  type="error"
-  showIcon
-/>
+//   if(errorServer?.errorNotExiste){ 
+//       return <Space
+//       direction="vertical"
+//       style={{
+//         width: '100%',
+//       }}
+//     >
+//      <Alert
+//   message="Tentative de Violation du Site"
+//   description="Votre action a été bloquée car elle constitue une violation de nos règles."
+//   type="error"
+//   showIcon
+// />
 
-    </Space>
-  }
+//     </Space>
+//   }
     return (
         <section className='detail-container'>
             <article className="breadcrumbs">
@@ -255,15 +255,15 @@ const { mutate, isLoading: isAddingModule } = useMutation(
           baseColor='#f7f7f7'
           highlightColor='#ebebeb'
           style={{ margin: "5px 0",width:"auto", minWidth: "230px", height: "26px" }}
-        />: <span style={{textTransform:"capitalize",fontSize:"21px"}}> {currentFormateur.nom}  {currentFormateur.prenom}</span>}
+        />: <span style={{textTransform:"capitalize",fontSize:"21px"}}> {currentFormateur.code} </span>}
 
 {isLoadingGetFormateur?  <Skeleton
           baseColor='#f7f7f7'
           highlightColor='#ebebeb'
           style={{ margin: "5px 0", width:"auto", minWidth: "160px", height: "23px" }}
-        />:  <span style={{textTransform:"capitalize"}}>{currentFormateur.metier}</span>}
+        />:  <span style={{fontSize:"14px", textTransform:"capitalize"}}>{currentFormateur.description}</span>}
 
-                           
+                     
                         </div>
                     </article>
                     <article className="about-formateur">
@@ -293,7 +293,7 @@ const { mutate, isLoading: isAddingModule } = useMutation(
     </div>
   ) : (
     <>
-      <h5>Modules de formateur</h5>
+      <h5>Modules de Filière</h5>
       {modulesormateur.map((module, index) => (
         <li key={index}>
           <span>

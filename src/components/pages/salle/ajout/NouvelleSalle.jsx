@@ -1,0 +1,162 @@
+import React, { useEffect, useState } from 'react';
+import Button from '@mui/material/Button';
+import { REGEX_REST } from '../../../authservice/regex';
+import { useMutation, useQueryClient } from 'react-query';
+import { ajouterSalle } from '../../../authservice/salle-request/salleRequest';
+import { SmileOutlined } from '@ant-design/icons';
+import { notification } from 'antd';
+import './nouvelleSalle.css';
+import Progress from '../../animation/Progess';
+export default function NouvelleSalle() {
+  const [formErrors, setFormErrors] = useState({
+    nom: false,
+    capacite: false,
+  });
+
+  const [notificationAPI, notificationHolder] = notification.useNotification();
+
+  const openNotification = () => {
+    notificationAPI.open({
+      placement: "topLeft",
+      message: 'Nouvelle Salle',
+      description: 'Salle créée avec succès',
+      icon: (
+        <SmileOutlined
+          style={{
+            color: 'rgb(0, 167, 111)',
+          }}
+        />
+      ),
+      duration: 2,
+    });
+  };
+
+  const [serverError, setServerError] = useState({});
+
+  const queryClient = useQueryClient();
+
+  const [formData, setFormData] = useState({
+    nom: '',
+    capacite:25,
+    emplacement: '', // Emplacement n'est plus obligatoire
+  });
+
+  const { mutate, isLoading } = useMutation(async (data) => {
+    try {
+      await ajouterSalle(data);
+      clearFormData();
+      openNotification();
+    } catch (error) {
+      setServerError(error.response?.data || {});
+    }
+  }, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['liste-salle', 1]);
+    },
+  });
+
+  function validateFormData(data) {
+    let hasError = false;
+
+    const newErrors = {
+      nom: !REGEX_REST.test(data.nom),
+      capacite: !REGEX_REST.test(data.capacite),
+    };
+
+    setFormErrors(newErrors);
+    hasError = Object.values(newErrors).some(error => error);
+
+    return !hasError;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateFormData(formData)) {
+      return;
+    }
+    mutate(formData);
+  };
+
+  const clearFormData = () => {
+    setFormData({
+      nom: '',
+      capacite: '',
+      emplacement: '',
+    });
+    setFormErrors({
+      nom: false,
+      capacite: false,
+    });
+    setServerError({});
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+
+  return (
+    <section className="parentModule">
+      <div className="module">
+        <h3>Salle</h3>
+      </div>
+      <form className="formModule" onSubmit={handleSubmit}>
+        <div className="moduleChild">
+          <div className="info">
+            <label className="label" htmlFor="nom">
+              <span>Nom de salle <span className="champsO">*</span></span>
+              {serverError.existeNom && <span className='existData'>{serverError.existeNom}</span>}
+            </label>
+            <input
+              type="text"
+              id="nom"
+              name="nom"
+              placeholder="Nom ..."
+              onChange={handleInputChange}
+              value={formData.nom}
+              className={`inputClass ${formErrors.nom ? 'is-invalid-error' : !formErrors.nom && formData.nom ? 'is-valid-confirm' : ''}`}
+            />
+          </div>
+          <div className="info">
+            <label className="label" htmlFor="capacite">
+              <span>Capacité <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="number"
+              id="capacite"
+              name="capacite"
+              placeholder="Capacité ..."
+              onChange={handleInputChange}
+              value={formData.capacite}
+              className={`inputClass ${formErrors.capacite ? 'is-invalid-error' : !formErrors.capacite && formData.capacite ? 'is-valid-confirm' : ''}`}
+            />
+          </div>
+        </div>
+        <div className="moduleChild">
+          <div className="info infoDescription">
+            <label className="label" htmlFor="emplacement">
+              <span>Emplacement</span>
+              {serverError.existeEmplacement && <span className='existData'>{serverError.existeEmplacement}</span>}
+            </label>
+            <textarea
+              id="emplacement"
+              name="emplacement"
+              placeholder="Emplacement de la salle"
+              onChange={handleInputChange}
+              value={formData.emplacement}
+              style={{ resize: "none" }}
+              className={`inputClass ${serverError.existEmplacement ? 'is-invalid-error' : ''}`}
+            ></textarea>
+          </div>
+        </div>
+        <div className="moduleChild">
+          <Button type="submit" className="buttonMbut articleButton" disabled={isLoading}>
+            {isLoading ? <Progress w={"25px"} h={"25px"} color={'white'} /> : 'Ajouter'}
+          </Button>
+        </div>
+      </form>
+      {notificationHolder}
+    </section>
+  );
+}

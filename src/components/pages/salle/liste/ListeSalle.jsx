@@ -1,11 +1,12 @@
 import  { useEffect, useState } from 'react';
 import { AiOutlineReload } from "react-icons/ai";
 import { CiSearch } from "react-icons/ci";
-import ModuleMod from './ModuleMod';
+// import ModuleMod from './ModuleMod';
+import SalleMod from './SalleMod';
 // import Modifcation from './Modifcation'; // Importation du composant de modification
 import Checkbox from '@mui/material/Checkbox';
 import DialogContext from '../../animation/DialogContext'; // Contexte de la boîte de dialogue
-import './listeFormateurs.css';
+import './listeSalle.css';
 import Button from '@mui/material/Button';
 import { Popconfirm } from 'antd';
 import { FaPlus } from "react-icons/fa6";
@@ -16,9 +17,10 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Pagination from '@mui/material/Pagination';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { searchModuleNext } from '../../../authservice/module-request/moduleRequest';
+import { searchSalleNext } from '../../../authservice/salle-request/salleRequest';
+// import { searchModuleNext } from '../../../authservice/module-request/moduleRequest';
 // import { searchFormateurNext } from '../../../authservice/formateur-request/formateurRquest';
-import { listeModule } from '../../../authservice/module-request/moduleRequest';
+import { listeSalle } from '../../../authservice/salle-request/salleRequest';
 // import { listeFormateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonctions de requête pour récupérer la liste et rechercher des formateurs
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -28,7 +30,7 @@ import { SmileOutlined } from '@ant-design/icons';
 import { notification } from 'antd';
 import { FaArrowUp } from "react-icons/fa6";
 import LinearProgress from '@mui/material/LinearProgress';
-import { supprimerModule } from '../../../authservice/module-request/moduleRequest';
+import { supprimerSalle } from '../../../authservice/salle-request/salleRequest';
 // import { supprimerformateur } from '../../../authservice/formateur-request/formateurRquest'; // Fonction pour supprimer un formateur
 import { MdModeEditOutline } from "react-icons/md";
 
@@ -36,7 +38,8 @@ import {  Empty } from 'antd';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
-import NouveauModule from '../ajout/NouveauModule';
+// import NouveauModule from '../ajout/NouveauModule';
+import NouvelleSalle from '../ajout/NouvelleSalle';
 import { Drawer } from 'antd';
 
 /*
@@ -68,7 +71,7 @@ const timeTest = import.meta.env.VITE_TIME;
 
 // Déclaration du composant ListeFormateurs
 
-export default function ListeModule() {
+export default function ListeSalle() {
 
   // Gestion du menu contextuel
   const [anchorEl, setAnchorEl] = useState(null); // Élément d'ancrage du menu
@@ -95,10 +98,9 @@ export default function ListeModule() {
   const [totalPages,setTotalePages]=useState({});
 
   // Récupération de la liste des formateurs paginée avec React Query
-  const { data, isLoading } = useQuery(['liste-module',currentPage], async () => {
+  const { data, isLoading } = useQuery(['liste-salle',currentPage], async () => {
     try {
-      await new Promise(resolve=>setTimeout(resolve,timeTest))
-      const response = await listeModule(currentPage);
+      const response = await listeSalle(currentPage);
       return response.data;
     } catch (error) {
       console.error(error);
@@ -155,17 +157,17 @@ export default function ListeModule() {
    // Mutation pour supprimer un formateur
    const { mutate } = useMutation(async (data) => {
      try {
-       await supprimerModule(data);
+       await supprimerSalle(data);
      } catch (error) {
        console.error(error);
      }
    }, {
      onSuccess: () => {
        if(totalPages.datainit){
-         queryClient.invalidateQueries(['liste-module', currentPage]);
+         queryClient.invalidateQueries(['liste-salle', currentPage]);
       }
       if(totalPages.rechercher){
-         queryClient.invalidateQueries(['search-module',currentPageRechercher]);
+         queryClient.invalidateQueries(['search-salle',currentPageRechercher]);
          setIsSearching(true)
       }
      }
@@ -186,10 +188,9 @@ export default function ListeModule() {
      setConfirmLoading(true);
  
      try {
-       await new Promise(resolve=>setTimeout(resolve,timeTest))
        await mutate(nouvelleListe);
        setOpenDelete(false);
-       message.success('Le Module a été supprimé avec succès', 2);
+       message.success('La salle a été supprimé avec succès', 2);
        setDataToDelete([]);
      } catch (error) {
        console.error("Une erreur s'est produite lors de la suppression du formateur:", error);
@@ -240,12 +241,11 @@ export default function ListeModule() {
   const [valInit, setValpInit] = useState('~~');
 
   const { isLoading: loadingDataSearch, data: dataSearchValue } = useQuery(
-    ['search-module', formDataSearch],
+    ['search-salle', formDataSearch],
     async () => {
       try {
         // Ajouter une petite pause pour améliorer l'expérience utilisateur
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const response = await searchModuleNext(currentPageRechercher, formDataSearch);
+        const response = await searchSalleNext(currentPageRechercher, formDataSearch);
         setValpInit(formDataSearch);
         return response.data;
       } catch (error) {
@@ -259,7 +259,7 @@ export default function ListeModule() {
   );
 
   const handleRemoveCache = () => {
-    queryClient.removeQueries(['search-module',valInit]);
+    queryClient.removeQueries(['search-salle',valInit]);
   };
 
   // Gestion de la recherche
@@ -321,56 +321,38 @@ export default function ListeModule() {
 
   // Le tri des donnés .....
   const [order, setOrder] = useState('desc');
-const [overButtonTh, setOverButtonTh]=useState('code')
+const [overButtonTh, setOverButtonTh]=useState('nom')
 
-const [currentValueTri,setCuurentValueTri]=useState('code')
+const [currentValueTri,setCuurentValueTri]=useState('nom')
   function triData(referenceData) {
     switch(referenceData) {
-        case "code":
+        case "nom":
             setDataGlobal(prev => {
                 if (order === "desc") {
-                    return prev.sort((a, b) => b.codeModule.localeCompare(a.codeModule));
+                    return prev.sort((a, b) => b.nom.localeCompare(a.nom));
                 } else {
-                    return prev.sort((a, b) => a.codeModule.localeCompare(b.codeModule));
+                    return prev.sort((a, b) => a.nom.localeCompare(b.nom));
                 }
             });
             break;
-          case "description":
+          case "emplacement":
               setDataGlobal(prev => {
                   if (order === "desc") {
-                      return prev.sort((a, b) => b.description.localeCompare(a.description));
+                      return prev.sort((a, b) => b.emplacement.localeCompare(a.emplacement));
                   } else {
-                      return prev.sort((a, b) => a.description.localeCompare(b.description));
+                      return prev.sort((a, b) => a.emplacement.localeCompare(b.emplacement));
                   }
               });
               break;
-              case "masseHoraire":
+              case "capacite":
                 setDataGlobal(prev => {
                     if (order === "desc") {
-                        return prev.sort((a, b) => b.masseHoraire - a.masseHoraire);
+                        return prev.sort((a, b) => b.capacite - a.capacite);
                     } else {
-                        return prev.sort((a, b) => a.masseHoraire - b.masseHoraire);
+                        return prev.sort((a, b) => a.capacite - b.capacite);
                     }
                 });
                 break;
-                case "MHP":
-                setDataGlobal(prev => {
-                    if (order === "desc") {
-                        return prev.sort((a, b) => b.MHP - a.MHP);
-                    } else {
-                        return prev.sort((a, b) => a.MHP - b.MHP);
-                    }
-                });
-                break;
-                case "MHD":
-                  setDataGlobal(prev => {
-                      if (order === "desc") {
-                          return prev.sort((a, b) => b.MHD - a.MHD);
-                      } else {
-                          return prev.sort((a, b) => a.MHD - b.MHD);
-                      }
-                  });
-                  break;
         default:
             break;
     }
@@ -389,7 +371,7 @@ const breadcrumbs = [
     Dashboard
   </Link>,
   <Typography style={{fontSize:"15px"}} key="3" color="text.primary">
-    Liste des modules
+    Liste des salles
   </Typography>,
 ];
 
@@ -418,7 +400,7 @@ return (
   {contextHolder}
 
   <Drawer width={480}  style={{padding:"0 10px"}} onClose={onClose} visible={openAddModule}>
-          <NouveauModule></NouveauModule>
+          <NouvelleSalle></NouvelleSalle>
   </Drawer>
   {/* Conteneur pour la description et le bouton d'ajout de formateur */}
   <article className='description-container'>
@@ -432,7 +414,7 @@ return (
     <Link >
       <Button  onClick={showDrawer} >
         <FaPlus className='plusFormateur' />
-        Ajouter Module
+        Ajouter Salle
       </Button>
     </Link>
   </article>
@@ -450,7 +432,7 @@ return (
           onKeyUp={e => { if (e.key === 'Enter') handleSearch() }}
           className='filter-input'
           type="text"
-          placeholder='Rechercher un module ...'
+          placeholder='Rechercher une salle ...'
         />
         <AiOutlineReload onClick={() => setActualiser(prev => !prev)} className="filter-button" />
       </div>
@@ -470,6 +452,7 @@ return (
           checked={dataToDelete.some(element => element.delete === true)}
           sx={{
             transform: "scale(0.8)",
+            zIndex:"-1",
             marginLeft: "12px",
             color: "rgb(99, 115, 129)",
             '&.Mui-checked': {
@@ -479,13 +462,13 @@ return (
         />
         <span style={{ fontSize: "14px" }}> {
           dataToDelete.filter((formateur) => formateur.delete === true).length
-        } <span> module sélectionnés</span> </span>
+        } <span> salle sélectionnées</span> </span>
       </span>
 
       {/* Boîte de dialogue de confirmation pour la suppression */}
       <Popconfirm
         title="Suppression"
-        description="Êtes-vous sûr de vouloir supprimer le module ?"
+        description="Êtes-vous sûr de vouloir supprimer la salle ?"
         open={openDelete}
         placement='top'
         onConfirm={handleOk}
@@ -530,19 +513,13 @@ return (
           </th>
           {/* En-têtes de colonne pour le tri */}
           <th>
-            <button onMouseOver={() => setOverButtonTh("code")} className="buttonTH" onClick={() => handleSort('code')} >Code <FaArrowUp className={`${currentValueTri === "code" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "code" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("nom")} className="buttonTH" onClick={() => handleSort('nom')} >Nom <FaArrowUp className={`${currentValueTri === "nom" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "nom" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("description")} className="buttonTH" onClick={() => handleSort('description')}>Déscription <FaArrowUp className={`${currentValueTri === "description" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "description" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("emplacement")} className="buttonTH" onClick={() => handleSort('emplacement')}>Emplacement <FaArrowUp className={`${currentValueTri === "emplacement" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "emplacement" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("masseHoraire")} className="buttonTH" onClick={() => handleSort('masseHoraire')}>Masse Horaire <FaArrowUp className={`${currentValueTri === "masseHoraire" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "masseHoraire" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
-          </th>
-          <th>
-            <button onMouseOver={() => setOverButtonTh("MHP")} className="buttonTH" onClick={() => handleSort('MHP')}>MHP <FaArrowUp className={`${currentValueTri === "MHP" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "MHP" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
-          </th>
-          <th style={{ borderRadius: "0 3px 0 0" }}>
-            <button onMouseOver={() => setOverButtonTh("MHD")} className="buttonTH" onClick={() => handleSort('MHD')}>MHD <FaArrowUp className={`${currentValueTri === "MHD" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "MHD" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+            <button onMouseOver={() => setOverButtonTh("capacite")} className="buttonTH" onClick={() => handleSort('capacite')}>Capacité <FaArrowUp className={`${currentValueTri === "capacite" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "capacite" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
         </tr>
       }
@@ -631,11 +608,9 @@ return (
                   }}
                 />
               </td>
-              <td>{formateur?.codeModule}</td>
-              <td>{formateur?.description}</td>
-              <td>{formateur?.masseHoraire}</td>
-              <td>{formateur?.MHP}</td>
-              <td>{formateur?.MHD}
+              <td>{formateur?.nom}</td>
+              <td>{formateur?.capacite}</td>
+              <td>{formateur?.emplacement}
                 <div className='edition'>
                   {/* Options de modification des formateurs */}
                   <IconButton
@@ -681,7 +656,7 @@ return (
 
   {/* Boîte de dialogue pour la modification d'un formateur */}
   <DialogContext setOpen={setOpen} open={open}>
-    <ModuleMod openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} module={moduleMod} />
+    <SalleMod openNotification={openNotification} handleClose={handleClose} currentPages={{ totalPages, currentPageRechercher, setIsSearching, currentPage, }} salle={moduleMod} />
   </DialogContext>
 </section>
   );
