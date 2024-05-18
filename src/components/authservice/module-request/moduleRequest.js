@@ -55,4 +55,9 @@ async function getInfosFormateur(id) {
     return response;
 }
 
-export {getInfosFormateur,deleteModuleFormateur,ajouterModuleFormateur, modulesFormateur, listeTousModuleNonPagine, searchModuleNext, ajouterModule, moduleSearch, updateModule, supprimerModule, listeModule };
+async function getModuleFiliereGoupe(id) {
+    const response = await api.get(`/module/get-module-filiere-groupe/?idGroupe=${id}`);
+    return response;
+}
+
+export {getModuleFiliereGoupe, getInfosFormateur,deleteModuleFormateur,ajouterModuleFormateur, modulesFormateur, listeTousModuleNonPagine, searchModuleNext, ajouterModule, moduleSearch, updateModule, supprimerModule, listeModule };

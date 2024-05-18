@@ -120,7 +120,7 @@ export default function NavBarLeft() {
               </li>
               {/* Sous-menu Créer emploi */}
               <li onClick={() => setElementHover(2)}>
-                <Link className="containerLink">
+                <Link to="/creer-emploi" className="containerLink">
                   <Button className={`contained ${elementHover === 2 ? 'elementHoverBackground' : ''}`} style={{ boxShadow: 'none' }} variant="contained">
                     <span className="span-li">
                       <FaCalendar style={{ color: elementHover === 2 ? 'rgb(0, 167, 111)' : '' }} className="span-li-icon" /> <span className={`${elementHover === 2 ? 'hoverColor' : ''}`}>Créer emploi</span>

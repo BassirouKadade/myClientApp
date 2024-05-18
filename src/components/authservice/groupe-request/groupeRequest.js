@@ -25,7 +25,14 @@ async function searchGroupeNext(page, data) {
     return response;
 }
 
+async function getInfoGroupesTotatles() {
+    const response = await api.get(`/groupe/get-groupe-totale`);
+    return response;
+}
+
+
 export {
+    getInfoGroupesTotatles,
     ajouterGroupe,
     listeGroupe,
     supprimerGroupe,
