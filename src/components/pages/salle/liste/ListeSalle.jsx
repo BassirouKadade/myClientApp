@@ -353,6 +353,24 @@ const [currentValueTri,setCuurentValueTri]=useState('nom')
                     }
                 });
                 break;
+                  case "MH":
+                setDataGlobal(prev => {
+                    if (order === "desc") {
+                        return prev.sort((a, b) => b.MH - a.MH);
+                    } else {
+                        return prev.sort((a, b) => a.MH - b.MH);
+                    }
+                });
+                break;
+                case "MREST":
+                  setDataGlobal(prev => {
+                      if (order === "desc") {
+                          return prev.sort((a, b) => b.MREST - a.MREST);
+                      } else {
+                          return prev.sort((a, b) => a.MREST - b.MREST);
+                      }
+                  });
+                  break;
         default:
             break;
     }
@@ -516,11 +534,19 @@ return (
             <button onMouseOver={() => setOverButtonTh("nom")} className="buttonTH" onClick={() => handleSort('nom')} >Nom <FaArrowUp className={`${currentValueTri === "nom" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "nom" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
           <th>
-            <button onMouseOver={() => setOverButtonTh("emplacement")} className="buttonTH" onClick={() => handleSort('emplacement')}>Emplacement <FaArrowUp className={`${currentValueTri === "emplacement" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "emplacement" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
-          </th>
-          <th>
             <button onMouseOver={() => setOverButtonTh("capacite")} className="buttonTH" onClick={() => handleSort('capacite')}>Capacité <FaArrowUp className={`${currentValueTri === "capacite" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "capacite" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
           </th>
+          <th>
+            <button onMouseOver={() => setOverButtonTh("MH")} className="buttonTH" onClick={() => handleSort('MH')}>Masse Horaire <FaArrowUp className={`${currentValueTri === "MH" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "MH" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+          </th>
+          <th>
+            <button onMouseOver={() => setOverButtonTh("MREST")} className="buttonTH" onClick={() => handleSort('MREST')}>Masse Horaire Restante <FaArrowUp className={`${currentValueTri === "MREST" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "MREST" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+          </th>
+          <th>
+            <button onMouseOver={() => setOverButtonTh("emplacement")} className="buttonTH" onClick={() => handleSort('emplacement')}>Emplacement <FaArrowUp className={`${currentValueTri === "emplacement" && order === "asc" ? "buttonTH-icons-rotate" : ""}  ${overButtonTh === "emplacement" ? "iconsDiaplay" : ""} buttonTH-icons`} /> </button>
+          </th>
+        
+        
         </tr>
       }
     </thead>
@@ -610,6 +636,8 @@ return (
               </td>
               <td>{formateur?.nom}</td>
               <td>{formateur?.capacite}</td>
+              <td>{formateur?.MH}</td>
+              <td>{formateur?.MREST}</td>
               <td>{formateur?.emplacement}
                 <div className='edition'>
                   {/* Options de modification des formateurs */}

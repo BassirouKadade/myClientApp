@@ -26,10 +26,16 @@ async function searchSalleNext(page, data) {
     return response;
 }
 
+async function allSallesDatabase() {
+    const response = await api.get(`/salle/getAllSalleDatabase`);
+    return response;
+}
+
 
 
 export {
     ajouterSalle,
+    allSallesDatabase,
     listeSalle,
     supprimerSalle,
     updateSalle,

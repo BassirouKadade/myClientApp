@@ -1,7 +1,7 @@
 .div-creation-emplois{  
   height: 100%;
   display: flex;
-  padding: 4px 25px;
+  padding: 4px 15px;
   flex-direction: column;
 }
 .div-emplois-headers{
@@ -10,13 +10,15 @@
     align-items: center;
     justify-content: space-between;
     color: #fff;
-    height: 75px;
+    height: 40px;
+    margin: 15px 0;
     color: #000000;
 }
 .div-emplois-body{   
   /* background-color: #285143; */
   display: flex;
   align-items: flex-start;
+  height: 498px;
   justify-content: space-between;
   color: #fff;
   ;
@@ -29,15 +31,12 @@
     justify-content: flex-start;
     flex-direction: column;
     color: #000000;
-}
-.div-groupe-ul{  
-  height: 260px;
-  padding: 0;
+    height: 100%;
+    /* background-color: #004c6d; */
 }
 
 .div-groupe-ul  .groupedisponible-emplois {
   width: 100%;
-  height: calc(100% - 60px);
   padding: 0;
   margin: 0;
   overflow-y: scroll;
@@ -46,9 +45,9 @@
   background-color: transparent;
   border-radius: 10px;
 }
-/* .moduldisponible:hover {
+.moduldisponible:hover {
   overflow-y: auto;
-} */
+}
 
 .div-groupe-ul  .groupedisponible-emplois {
   scrollbar-width: 10px;
@@ -111,32 +110,59 @@
   color:rgb(0, 167, 111);
   font-size: 17px;
 }
+
+
+/* Gestion de secion de tabelau d'emplois ---- */
+
+.titreAlert{
+    display: flex;
+    height: 60px;
+    margin-bottom: 10px ;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #004c6d59;
+    padding: 10px;
+
+    border-radius: 5px;
+}
 .schedule-table {
   border-collapse: collapse;
+  cursor:all-scroll;
 }
 
 .schedule-table tbody tr:hover{background-color: transparent;}
-.day-column,
+
 .hour-column {
-  border: 1px solid #ddd;
-  padding:15px  6.5px;
+  /* border: 1px solid #ddd; */
+  padding:16px  6.5px;
   font-size: 12px;
   font-weight: 700;
   text-align: center;
 }
 
+.day-column {
+  padding:16px  6.5px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+/* Ajoutez ce style dans votre fichier CSS */
+.selected-cell {
+  border: none !important;
+}
+
 .day-cell {
   height: 17px;
   border: 1px solid #ddd;
-  padding:20px  6.5px;
+  padding:21.1px  6.5px;
   font-size: 12px;
   font-weight: 700;
 
   width: 10px;
   text-align: center;
 
-  color:#000000dc;
-  background: rgb(244, 246, 248)
+  color:#ffffff;
+  background: #004c6d;
 }
 
 .schedule-cell {
@@ -145,7 +171,14 @@
 }
 
 .selected-cell {
-  background: linear-gradient(to bottom,  #0dcaf0 0%, #0dcaf0 100%); /* Dégradé de bleu */
+  background: linear-gradient(to bottom, #58508d
+
+
+  0%, #58508d
+
+
+
+  100%); /* Dégradé de bleu */
   border: none;
   z-index: 1000000000;
   color: #fff; /* Texte en blanc */
@@ -171,8 +204,7 @@
   transition: background-color 0.3s ease; /* Transition douce pour le changement de couleur */
 }
 .publication-emplois{  
-  width: 100%;
-  margin-top: 10px;
+  width: 40%;
   text-align: end;
 }
 /* thead tr{
@@ -188,4 +220,6 @@
   justify-content: flex-start;
   flex-direction: column;
 }
+
+
 

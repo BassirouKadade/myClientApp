@@ -109,6 +109,7 @@ export default function ListeFormateurs() {
     }
   });
 
+// Avce use Effect
   // Fonction pour fermer la boîte de dialogue de modification
   const handleClose = () => {
     setOpen(false);

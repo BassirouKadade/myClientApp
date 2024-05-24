@@ -7,10 +7,13 @@ import { SmileOutlined } from '@ant-design/icons';
 import { notification } from 'antd';
 import './nouvelleSalle.css';
 import Progress from '../../animation/Progess';
+
 export default function NouvelleSalle() {
   const [formErrors, setFormErrors] = useState({
     nom: false,
     capacite: false,
+    MH: false,
+    MREST: false,
   });
 
   const [notificationAPI, notificationHolder] = notification.useNotification();
@@ -37,10 +40,16 @@ export default function NouvelleSalle() {
 
   const [formData, setFormData] = useState({
     nom: '',
-    capacite:25,
-    emplacement: '', // Emplacement n'est plus obligatoire
+    capacite: 25,
+    MH: 60,
+    MREST: '',
+    emplacement: '',
   });
 
+    useEffect(()=>{
+         setFormData(prev=>({...prev,MREST:prev.MH}))
+    },[formData])
+    
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
       await ajouterSalle(data);
@@ -61,6 +70,8 @@ export default function NouvelleSalle() {
     const newErrors = {
       nom: !REGEX_REST.test(data.nom),
       capacite: !REGEX_REST.test(data.capacite),
+      MH: !REGEX_REST.test(data.MH),
+      MREST: !REGEX_REST.test(data.MREST),
     };
 
     setFormErrors(newErrors);
@@ -81,11 +92,15 @@ export default function NouvelleSalle() {
     setFormData({
       nom: '',
       capacite: '',
+      MH: 60,
+      MREST:'',
       emplacement: '',
     });
     setFormErrors({
       nom: false,
       capacite: false,
+      MH: false,
+      MREST: false,
     });
     setServerError({});
   };
@@ -94,7 +109,6 @@ export default function NouvelleSalle() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
 
   return (
     <section className="parentModule">
@@ -130,6 +144,36 @@ export default function NouvelleSalle() {
               onChange={handleInputChange}
               value={formData.capacite}
               className={`inputClass ${formErrors.capacite ? 'is-invalid-error' : !formErrors.capacite && formData.capacite ? 'is-valid-confirm' : ''}`}
+            />
+          </div>
+        </div>
+        <div className="moduleChild">
+          <div className="info">
+            <label className="label" htmlFor="MH">
+              <span>Masse Horaire <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="number"
+              id="MH"
+              name="MH"
+              placeholder="MH ..."
+              onChange={handleInputChange}
+              value={formData.MH}
+              className={`inputClass ${formErrors.MH ? 'is-invalid-error' : !formErrors.MH && formData.MH ? 'is-valid-confirm' : ''}`}
+            />
+          </div>
+          <div className="info">
+            <label className="label" htmlFor="MREST">
+              <span>Masse Horaire Restante <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="number"
+              id="MREST"
+              name="MREST"
+              placeholder="MREST ..."
+              value={formData.MREST}
+              readOnly
+              className={`inputClass ${formErrors.MREST ? 'is-invalid-error' : !formErrors.MREST && formData.MREST ? 'is-valid-confirm' : ''}`}
             />
           </div>
         </div>

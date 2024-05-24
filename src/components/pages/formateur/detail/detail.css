@@ -190,9 +190,9 @@
     border-radius: 10px;
 }
 
-nav::-webkit-scrollbar-track {
+/* nav::-webkit-scrollbar-track {
     background-color: #ffffff;
-}
+} */
 .nav-right-profile .moduldisponible li {
     width: 100%;
     margin: 4px 0;

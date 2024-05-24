@@ -1,4 +1,4 @@
-import { useState } from 'react'; // Importation des hooks de React
+import { useState,useEffect } from 'react'; // Importation des hooks de React
 import Button from '@mui/material/Button'; // Importation du composant Button de Material-UI
 import { REGEX_REST } from '../../../authservice/regex'; // Importation d'une constante regex pour la validation
 import './modification.css'; // Importation du fichier CSS pour le style
@@ -8,11 +8,13 @@ import Progress from '../../animation/Progess'; // Importation d'un composant pe
 
 // Composant principal pour la modification d'une salle
 export default function SalleMod({ openNotification, handleClose, currentPages: { totalPages, setIsSearching, currentPageRechercher, currentPage }, salle }) {
-  
+
   // État pour suivre les erreurs de validation
   const [errors, setErrors] = useState({
     nom: false,
     capacite: false,
+    MH: false,
+    MREST: false,
   });
 
   // Données initiales et de recherche provenant des props
@@ -21,7 +23,7 @@ export default function SalleMod({ openNotification, handleClose, currentPages: 
 
   // État pour les erreurs du serveur
   const [errorServer, setErrorServer] = useState({});
-  
+
   // Instance de QueryClient de React Query pour la gestion du cache
   const queryClient = useQueryClient();
 
@@ -56,6 +58,8 @@ export default function SalleMod({ openNotification, handleClose, currentPages: 
     const newErrors = {
       nom: !REGEX_REST.test(data.nom),
       capacite: !REGEX_REST.test(data.capacite),
+      MH: !REGEX_REST.test(data.MH),
+      MREST: !REGEX_REST.test(data.MREST),
     };
 
     setErrors(newErrors);
@@ -76,12 +80,16 @@ export default function SalleMod({ openNotification, handleClose, currentPages: 
   const clearFormData = () => {
     setFormData({
       nom: '',
-      capacite: '',
+      capacite: 25,
+      MH: '',
+      MREST: formData.MH,
       emplacement: '',
     });
     setErrors({
       nom: false,
       capacite: false,
+      MH: false,
+      MREST: false,
     });
     setErrorServer({});
   };
@@ -92,8 +100,12 @@ export default function SalleMod({ openNotification, handleClose, currentPages: 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  useEffect(()=>{
+    setFormData(prev=>({...prev,MREST:prev.MH}))
+},[formData])
+
   return (
-    <section style={{width:"600px",padding:"0 30px"}} className="parentModule">
+    <section style={{ width: "600px", padding: "0 30px" }} className="parentModule">
       <div className="module">
         <h3>Salle</h3>
       </div>
@@ -126,6 +138,36 @@ export default function SalleMod({ openNotification, handleClose, currentPages: 
               onChange={handleInputChange}
               value={formData.capacite}
               className={`inputClass ${errors.capacite ? 'is-invalid-error' : !errors.capacite && formData.capacite ? 'is-valid-confirm' : ''}`}
+            />
+          </div>
+        </div>
+        <div className="moduleChild">
+          <div className="info">
+            <label className="label" htmlFor="MH">
+              <span>Masse Horaire <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="number"
+              id="MH"
+              name="MH"
+              placeholder="MH ..."
+              onChange={handleInputChange}
+              value={formData.MH}
+              className={`inputClass ${errors.MH ? 'is-invalid-error' : !errors.MH && formData.MH ? 'is-valid-confirm' : ''}`}
+            />
+          </div>
+          <div className="info">
+            <label className="label" htmlFor="MREST">
+              <span>Masse Horaire Restante <span className="champsO">*</span></span>
+            </label>
+            <input
+              type="number"
+              id="MREST"
+              name="MREST"
+              placeholder="MREST ..."
+              value={formData.MREST}
+              readOnly
+              className={`inputClass ${errors.MREST ? 'is-invalid-error' : !errors.MREST && formData.MREST ? 'is-valid-confirm' : ''}`}
             />
           </div>
         </div>
