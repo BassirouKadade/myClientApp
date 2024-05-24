@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import './CreerEmplois.css';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Typography from '@mui/material/Typography';
+
 import { useQuery } from 'react-query';
 import { getModuleFiliereGoupe } from '../../authservice/module-request/moduleRequest';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -17,6 +14,7 @@ import HeaderSection from './tableEmplois/HeaderSection';
 import DataSearch from './DataSearch/DataSearch';
 import { getEmploisGroupe } from '../../authservice/create_emplois_request/createEmploisRequest';
 import InterfaceEmplois from './tableEmplois/InterfaceEmplois';
+import LogEmplois from '../../assets/eemplois.jpeg'
 export default function CreerEmplois() {
   // State management
   const [currentGroupeEmplois, setCurrentGroupeEmplois] = useState(null);
@@ -31,92 +29,79 @@ export default function CreerEmplois() {
     endIndex: null,
   });
   const [errorServer, setErrorServer] = useState({});
-  const [open, setOpen] = useState(false);
   const [openSalle, setOpenSalle] = useState(false);
 
  
 
-  // Breadcrumb navigation
-  const breadcrumbs = [
-    <Link
-      key="1"
-      to="/dashboard"
-      style={{ fontSize: "15px", textDecoration: "none", color: "rgba(99, 115, 119, 0.7)" }}
-    >
-      Dashboard
-    </Link>,
-    <Typography key="2" style={{ fontSize: "15px" }} color="text.primary">
-      Création d'emplois du temps
-    </Typography>,
-  ];
+  
 
-  // Mouse event handlers for schedule table
-  const handleMouseDown = (day, startIndex) => {
-    setSelection({
-      select: true,
-      day,
-      startIndex,
-      endIndex: startIndex,
-    });
-  };
+  // // Mouse event handlers for schedule table
+  // const handleMouseDown = (day, startIndex) => {
+  //   setSelection({
+  //     select: true,
+  //     day,
+  //     startIndex,
+  //     endIndex: startIndex,
+  //   });
+  // };
 
-  const handleMouseMove = (day, index) => {
-    if (selection.select && selection.day === day && selection.startIndex <= index) {
-      setSelection(prevState => ({
-        ...prevState,
-        endIndex: index,
-      }));
-    }
-  };
+  // const handleMouseMove = (day, index) => {
+  //   if (selection.select && selection.day === day && selection.startIndex <= index) {
+  //     setSelection(prevState => ({
+  //       ...prevState,
+  //       endIndex: index,
+  //     }));
+  //   }
+  // };
 
-  const handleMouseUp = () => {
-    setSelection(prevState => ({
-      ...prevState,
-      select: false,
-    }));
+  // const handleMouseUp = () => {
+  //   setSelection(prevState => ({
+  //     ...prevState,
+  //     select: false,
+  //   }));
 
-    if (selection.endIndex > selection.startIndex) {
-      handleClickOpen();
-      if (!isLoading) {
-        setStartFetching(true);
-      }
-    }
-  };
+  //   if (selection.endIndex > selection.startIndex) {
+  //     handleClickOpen();
+  //     if (!isLoading) {
+  //       setStartFetching(true);
+  //     }
+  //   }
+  // };
 
-  const [sallesDisponibles, setSallesDisponibles] = useState([]);
-  const [startFetching, setStartFetching] = useState(false);
+  // const [sallesDisponibles, setSallesDisponibles] = useState([]);
+  // const [startFetching, setStartFetching] = useState(false);
 
-  const { data: sallesFetch, isLoading } = useQuery(
-    ['verification-salle-disponible', selection],
-    async () => {
-      try {
-        const response = await verificationSalleDisponible({
-          day: selection.day,
-          start: selection.startIndex,
-          end: selection.endIndex
-        });
-        return response.data;
-      } catch (error) {
-        setErrorServer(error.response?.data || 'Une erreur est survenue');
-      }
-    },
-    {
-      enabled: startFetching,
-      onSuccess: (data) => {
-        setSallesDisponibles(data);
-        setStartFetching(false);
-      },
-      onError: () => {
-        setStartFetching(false);
-      }
-    }
-  );
+  // const { data: sallesFetch, isLoading } = useQuery(
+  //   ['verification-salle-disponible', selection],
+  //   async () => {
+  //     try {
+  //       const response = await verificationSalleDisponible({
+  //         day: selection.day,
+  //         start: selection.startIndex,
+  //         end: selection.endIndex
+  //       });
+  //       return response.data;
+  //     } catch (error) {
+  //       setErrorServer(error.response?.data || 'Une erreur est survenue');
+  //     }
+  //   },
+  //   {
+  //     enabled: startFetching,
+  //     onSuccess: (data) => {
+  //       setSallesDisponibles(data);
+  //       setStartFetching(false);
+  //     },
+  //     onError: () => {
+  //       setStartFetching(false);
+  //     }
+  //   }
+  // );
 
-  useEffect(() => {
-    if (!isLoading && startFetching) {
-      setStartFetching(false);
-    }
-  }, [isLoading, startFetching]);
+  // useEffect(() => {
+  //   if (!isLoading && startFetching) {
+  //     setStartFetching(false);
+  //   }
+  // }, [isLoading, startFetching]);
 
   const { data: getInfoGroupes, isLoading: isLoadingGetGroupes } = useQuery(
     ['liste-groupes-centre'],
@@ -174,14 +159,7 @@ export default function CreerEmplois() {
     }
   );
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
+ 
   const handleClickOpenSalle = () => {
     setOpenSalle(true);
   };
@@ -218,6 +196,13 @@ export default function CreerEmplois() {
         "Vendredi":getEmplois?.filter(element=>element.day==="Vendredi"),
         "Samedi":getEmplois?.filter(element=>element.day==="Samedi")
   }
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('fr-FR');
+    setCurrentDate(formattedDate);
+  }, []);
 
   useEffect(()=>{
    if(!loadingGetEmplois){
@@ -240,25 +225,15 @@ export default function CreerEmplois() {
 
   return (
     <div className='div-creation-emplois'>
-      <DialogContext setOpen={setOpen} open={open}>
-        <Disponibilite  
-          start={selection.startIndex}
-          end={selection.endIndex}
-          day={selection.day}
-          salles={sallesDisponibles}
-          setStartFetching={setStartFetching}
-          currentGroupeEmplois={currentGroupeEmplois}
-        />
-      </DialogContext>
+     
       <DialogContext setOpen={setOpenSalle} open={openSalle}>
         <SallesVerification />
       </DialogContext>
       <div className='div-emplois-headers'>
-        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
-          {breadcrumbs}
-        </Breadcrumbs>
+      
+         <img style={{borderRadius:"50%"}} width={65} height={65} src={LogEmplois} alt="" />
         <div>
-          <span>ISTA Bouznika 18/05/2024</span>
+        <span className='dateStyle'>ISTA Bouznika {currentDate}</span>
         </div>
       </div>
       <div className="div-emplois-body">
@@ -284,7 +259,10 @@ export default function CreerEmplois() {
               // handleOpenBac
             }}
           />
-          <InterfaceEmplois></InterfaceEmplois>
+          <InterfaceEmplois
+           data={{currentGroupeEmplois}}
+          
+          ></InterfaceEmplois>
           {/* <Table
             data={{
               loadingGetEmplois,

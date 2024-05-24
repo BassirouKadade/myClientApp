@@ -45,7 +45,7 @@ const SallesVerification = () => {
   });
   return (
     isLoading|| !data?   <div style={{padding:"13px", width:"600px"}}>
-    {[1, 2, 3, 4,5,6,7].map((_, index) => (
+    {[1, 2, 3, 4,5,6,7,8,9].map((_, index) => (
       <Skeleton
         baseColor='#f7f7f7'
         highlightColor='#ebebeb'

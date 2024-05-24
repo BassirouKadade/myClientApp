@@ -4,8 +4,11 @@ import { Menu, Tag, notification } from 'antd';
 import { IoIosHome } from "react-icons/io";
 import { MdOutlineSocialDistance } from "react-icons/md";
 import './Disponibilte.css';
+import Skeleton from 'react-loading-skeleton';
+import { allSallesDatabase } from '../../authservice/salle-request/salleRequest';
 import { creerEmplois } from '../../authservice/create_emplois_request/createEmploisRequest';
 import { useMutation } from 'react-query';
+import Progress from '../animation/Progess';
 const items = [
   {
     key: '1',
@@ -109,7 +112,7 @@ const getLevelKeys = (items) => {
 
 const levelKeys = getLevelKeys(items);
 
-export default function Disponibilite({day,setStartFetching, start, end, salles, currentGroupeEmplois }) {
+export default function Disponibilite({day,handleClose,isLoadingSalleGet,setStartFetching,width, start, end, salles, currentGroupeEmplois }) {
   const [salleSelect, setSalleSelect] = useState(null);
   const [dataSendToServer, setDataSendToServer] = useState({
     startIndex: null,
@@ -131,6 +134,7 @@ export default function Disponibilite({day,setStartFetching, start, end, salles,
       startEnd: end,
       startIndex: start,
       day:day,
+      width:width,
       idGroupe: currentGroupeEmplois?.id,
     }));
   }, [currentGroupeEmplois?.id,day, start, end]);
@@ -154,20 +158,21 @@ export default function Disponibilite({day,setStartFetching, start, end, salles,
   };
 
   
+  const [errorServer, setErrorServer] = useState({});
 
-  const [errorServer,setErrorServer]=useState({})
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
       await creerEmplois(data);
     } catch (error) {
       setErrorServer(error.response.data);
     }
-  // }, {
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries(['liste-formateur',1]);
-  //   },
+  }, {
+    onSuccess: () => {
+      handleClose();
+    }
   });
 
+const [typeSeanceToSend,setTypeSeanceToSend]=useState(null)
   const onHandleSendDataTOServer = (typeSeance) => {
     if (!dataSendToServer.idGroupe) {
       setError(prev => ({ ...prev, groupe: true }))
@@ -215,19 +220,44 @@ export default function Disponibilite({day,setStartFetching, start, end, salles,
     <div className='disponiblite-data'>
       {contextHolder}
       <article className="type-cours">
-        <span onClick={() => onHandleSendDataTOServer('FP')}
+        <span onClick={() =>{ setTypeSeanceToSend("FP"); onHandleSendDataTOServer('FP')}}
  className='type type-PRE'>
- <IoIosHome style={{ marginRight: "5px" }} /> Présentiel
+ 
+    {
+    isLoading&& typeSeanceToSend==="FP"? 
+       <Progress w={"25px"} h={"25px"} color={'white'} /> : 
+       <>
+         <IoIosHome style={{ marginRight: "5px" }} /> 
+         Présentiel
+       </>
+   }
 </span>
-<span onClick={() => onHandleSendDataTOServer('FAD')} className='type type-FAD'>
- <MdOutlineSocialDistance style={{ marginRight: "5px" }} /> FAD
+<span onClick={() => {setTypeSeanceToSend('FAD'), onHandleSendDataTOServer('FAD')}} className='type type-FAD'>
+
+{
+isLoading&& typeSeanceToSend==="FAD"? 
+       <Progress w={"25px"} h={"25px"} color={'white'} /> : 
+       <>
+        <MdOutlineSocialDistance style={{ marginRight: "5px" }} /> 
+         FAD
+       </>
+   }
 </span>
 </article>
 <article className='disponiblite-formateur-salle'>
 <div className="disponiblite-formateur">
  <h6>Salles Disponibles</h6>
  <ul className='disponiblite-formateur-ul'>
-   {salles?.map((salle, index) => (
+  {
+    isLoadingSalleGet?[1, 2, 3, 4,5,6].map((_, index) => (
+      <Skeleton
+        baseColor='#f7f7f7'
+        highlightColor='#ebebeb'
+        style={{ margin: "5px 0", width: "100%", height: "35px" }}
+        key={index}
+      />
+    )):
+      salles?.map((salle, index) => (
      <li
        onClick={() => {
          setSalleSelect(index);
@@ -237,8 +267,8 @@ export default function Disponibilite({day,setStartFetching, start, end, salles,
        key={index}
      >
        <span>{salle.nom}</span>
-       <Tag color={salle.capacite > 25 ? 'geekblue' : 'green'} key={index}>
-         {salle.capacite}
+       <Tag color={salle.MREST > 25 ? 'geekblue' : 'green'} key={index}>
+         {salle.MREST}
        </Tag>
      </li>
    ))}

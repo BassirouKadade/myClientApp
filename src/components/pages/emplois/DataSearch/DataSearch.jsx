@@ -23,7 +23,7 @@ export default function DataSearch({ data }) {
 
   return (
     <section className="groupe-module-section-emplois">
-      <div className="div-groupe-ul" style={{ height: "45%" }}>
+      <div className="div-groupe-ul" style={{ height: "45%"}}>
         <div className="chargement chargement-module">
           <div className="filter-item-one" style={{ width: "100%" }}>
             <CiSearch className="filter-search" />
@@ -47,7 +47,7 @@ export default function DataSearch({ data }) {
             />
           )}
         </div>
-        <ul className="groupedisponible-emplois" style={{ height: "200px" }}>
+        <ul  className="groupedisponible-emplois" style={{ marginBottom:"10px" , height: "170px" }}>
           {isLoadingGetGroupes ? (
             <div className="container" style={{ padding: 0 }}>
               {[1, 2, 3, 4].map((_, index) => (
@@ -78,9 +78,9 @@ export default function DataSearch({ data }) {
           )}
         </ul>
       </div>
-      <div className="div-groupe-ul" style={{ height: "55%" }}>
-        <div className="module-groupe-text">Modules de Groupe</div>
-        <ul className="groupedisponible-emplois" style={{ height: "210px" }}>
+      <div style={{margin:"10px 0"}} className="module-groupe-text">Modules de Groupe</div>
+      <div className="div-groupe-ul" style={{ height: "45%" }}>
+        <ul className="groupedisponible-emplois" style={{ height: "170px" }}>
           {isLoadingModuleFiliereGroupes ? (
             <div className="container" style={{ padding: 0 }}>
               {[1, 2, 3, 4, 5].map((_, index) => (
@@ -103,7 +103,7 @@ export default function DataSearch({ data }) {
               <li key={index}>
                 <span>
                   <GiBookmark className="color-icons-add-emplois icons-modules" />
-                  {module?.description}
+                  {module?.description.toUpperCase()}
                 </span>
               </li>
             ))

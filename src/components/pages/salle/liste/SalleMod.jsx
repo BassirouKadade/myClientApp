@@ -43,6 +43,7 @@ export default function SalleMod({ openNotification, handleClose, currentPages: 
   }, {
     onSuccess: () => {
       // Invalide les requêtes en cache après une mise à jour réussie
+        queryClient.invalidateQueries('verification-salle-disponible');
       if (dataInit) {
         queryClient.invalidateQueries(['liste-salle', currentPage]);
       }

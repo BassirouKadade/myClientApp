@@ -49,7 +49,7 @@
   align-items: center;
 }
 .dayEmploisSpan{
-   height: 58.33px;
+   height: 51.66px;
    background-color:black;
    display: flex;
    align-items: center;
@@ -66,7 +66,7 @@
 
 .containerEmplois {
   width: 900px;
-  height: 350px;
+  height: 310px;
   background-color: aquamarine;
   margin: auto;
   position: relative;
@@ -77,11 +77,30 @@
 
 .spanCol {
   position: absolute;
-  height: 58.33px;
+  height: 51.66px;
   border-radius: 5px;
   background-color: blue;
 }
 
 .cursorResize {
   cursor: ew-resize;
+}
+
+/* creation de style pour header emplois */
+.titreAlert{
+  display: flex;
+  height: 60px;
+  margin-bottom: 10px ;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+
+  border-radius: 5px;
+}
+.publication-emplois{  
+  width: 40%;
+  text-align: end;
+}
+.publication-emplois button{
+  margin-left: 10px;
 }
