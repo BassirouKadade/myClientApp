@@ -81,11 +81,28 @@
   border-radius: 5px;
   background-color: blue;
 }
-
+.SpanSeanceGroupe{
+  position:absolute;
+  background-color:dodgerblue;
+  height:51.66px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  cursor:pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
 .cursorResize {
   cursor: ew-resize;
 }
-
+.howNombreSeance{
+    display: flex;
+}
+.hideNombreSeance{
+    display: none;
+}
 /* creation de style pour header emplois */
 .titreAlert{
   display: flex;

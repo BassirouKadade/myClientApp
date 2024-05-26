@@ -31,78 +31,6 @@ export default function CreerEmplois() {
   const [errorServer, setErrorServer] = useState({});
   const [openSalle, setOpenSalle] = useState(false);
 
- 
-
-  
-
-  // // Mouse event handlers for schedule table
-  // const handleMouseDown = (day, startIndex) => {
-  //   setSelection({
-  //     select: true,
-  //     day,
-  //     startIndex,
-  //     endIndex: startIndex,
-  //   });
-  // };
-
-  // const handleMouseMove = (day, index) => {
-  //   if (selection.select && selection.day === day && selection.startIndex <= index) {
-  //     setSelection(prevState => ({
-  //       ...prevState,
-  //       endIndex: index,
-  //     }));
-  //   }
-  // };
-
-  // const handleMouseUp = () => {
-  //   setSelection(prevState => ({
-  //     ...prevState,
-  //     select: false,
-  //   }));
-
-  //   if (selection.endIndex > selection.startIndex) {
-  //     handleClickOpen();
-  //     if (!isLoading) {
-  //       setStartFetching(true);
-  //     }
-  //   }
-  // };
-
-  // const [sallesDisponibles, setSallesDisponibles] = useState([]);
-  // const [startFetching, setStartFetching] = useState(false);
-
-  // const { data: sallesFetch, isLoading } = useQuery(
-  //   ['verification-salle-disponible', selection],
-  //   async () => {
-  //     try {
-  //       const response = await verificationSalleDisponible({
-  //         day: selection.day,
-  //         start: selection.startIndex,
-  //         end: selection.endIndex
-  //       });
-  //       return response.data;
-  //     } catch (error) {
-  //       setErrorServer(error.response?.data || 'Une erreur est survenue');
-  //     }
-  //   },
-  //   {
-  //     enabled: startFetching,
-  //     onSuccess: (data) => {
-  //       setSallesDisponibles(data);
-  //       setStartFetching(false);
-  //     },
-  //     onError: () => {
-  //       setStartFetching(false);
-  //     }
-  //   }
-  // );
-
-  // useEffect(() => {
-  //   if (!isLoading && startFetching) {
-  //     setStartFetching(false);
-  //   }
-  // }, [isLoading, startFetching]);
-
   const { data: getInfoGroupes, isLoading: isLoadingGetGroupes } = useQuery(
     ['liste-groupes-centre'],
     async () => {
@@ -204,6 +132,9 @@ export default function CreerEmplois() {
     setCurrentDate(formattedDate);
   }, []);
 
+  const [openBac, setOpenBac] = useState(false);
+
+
   useEffect(()=>{
    if(!loadingGetEmplois){
        setOpenBac(false);
@@ -213,15 +144,7 @@ export default function CreerEmplois() {
    }
   },[loadingGetEmplois])
 
-  const [openBac, setOpenBac] = useState(false);
-
-  // const handleCloseBac = () => {
-  //   setOpenBac(false);
-  // };
-
-  // const handleOpenBac = () => {
-  //   setOpenBac(true);
-  // };
+ 
 
   return (
     <div className='div-creation-emplois'>
@@ -260,7 +183,7 @@ export default function CreerEmplois() {
             }}
           />
           <InterfaceEmplois
-           data={{currentGroupeEmplois}}
+           data={{openBac,emplois, currentGroupeEmplois}}
           
           ></InterfaceEmplois>
           {/* <Table

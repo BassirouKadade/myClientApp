@@ -3,6 +3,9 @@ import './InterfaceEmplois.css';
 import DialogContext from '../../animation/DialogContext';
 import Disponibilite from '../Disponibilite';
 import { useQuery } from 'react-query';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+
 import { verificationSalleDisponible } from '../../../authservice/create_emplois_request/createEmploisRequest';
 const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const hours = [
@@ -11,19 +14,32 @@ const hours = [
   "16:30", "17:30", "17:30", "18:30"
 ];
 export default function InterfaceEmplois({data}) {
-  const {currentGroupeEmplois}=data
+  const {currentGroupeEmplois,emplois,openBac}=data
 
+  const hasOneNotEmpty = Object.values(emplois)?.some(array => array?.length > 0);
+
+  console.log(Object.keys(emplois))
   const [left, setLeft] = useState(0);
   const [top, setTop] = useState(0);
   const [selected, setSelected] = useState(false);
-  const [width, setWidth] = useState(45);
+  const [width, setWidth] = useState(0);
   const [actuellePosition, setActuellePosition] = useState(45);
   const [cursor, setCursor] = useState(false);
   const containerRef = useRef(null);
   const [indexDay,setIndexDay]=useState(null)
   const [selection,setSelection]=useState({})
+  const [nombreSeance,setNombreSeance]=useState(0)
   // const [right,setRight]=useState(0)
   // const [cordonne,setCordonne]=useState({x:null,y:null})
+
+ 
+  useEffect(()=>{
+    const nombreSeance=width/45
+    const resultNombre=nombreSeance*0.5
+    setNombreSeance(resultNombre)
+
+  },[width])
+
   function handleMouseMove(event) {
     
     const { pageX,
@@ -49,6 +65,9 @@ export default function InterfaceEmplois({data}) {
     setWidth(valeurWidthAdd);
   }
 
+  useEffect(()=>{
+    setWidth(0)
+  },[currentGroupeEmplois?.id])
   function  calculeRight(){
        let valeurInit=0;
        if(left===0){
@@ -249,6 +268,7 @@ export default function InterfaceEmplois({data}) {
   }, [isLoading, startFetching]);
 
 
+  console.log(emplois)
   
   function handleMouseUp() {
       setSelected(false);
@@ -288,6 +308,8 @@ export default function InterfaceEmplois({data}) {
           salles={sallesDisponibles}
           setStartFetching={setStartFetching}
           handleClose={handleClose}
+          top={top}
+          nombreSeance={nombreSeance}
           currentGroupeEmplois={currentGroupeEmplois}
         />
       </DialogContext>
@@ -312,7 +334,8 @@ export default function InterfaceEmplois({data}) {
             })
           }
         </div>
-        <div
+          <div style={{width:900 ,height: 310, position: 'relative' }} className="backdropEmplpois">
+          <div
           ref={containerRef}
           onMouseUp={handleMouseUp}
           onMouseDown={handleMouseDown}
@@ -331,14 +354,47 @@ export default function InterfaceEmplois({data}) {
             }} 
             className='spanCol'
           >
-               <span>
-                   S102
-               </span>
-               <span>
-                  RIAD
-               </span>
+            <span className={`${width>0?"howNombreSeance":"hideNombreSeance"}`}>
+               {nombreSeance}h
+            </span>
           </span>
+          {
+                hasOneNotEmpty&&Object.keys(emplois).map(day => (
+                  <>
+                      {emplois[day].map((emploi, index) => {
+                       return  <span  className='SpanSeanceGroupe' style={{backgroundColor:emploi.typeReservation==="FAD"?"rgba(148, 0, 211, 0.599)":"",  top:`${emploi.startTop}%`,left:`${emploi.startIndex}%`,width:emploi.width}} key={index}> 
+                                  <span>
+                                        Soumia Ferfara
+                                  </span>
+                                  {
+                                    emploi.typeReservation ==="FP"?<span> 
+                                    {emploi.salle}
+                                    </span>:<span> 
+                                        {emploi.typeReservation}
+                                  </span>
+                                  }
+                                  
+                         </span>   
+                     })}
+                  </>
+                ))}
         </div>
+        <Backdrop
+                sx={{
+                    color: '#fff',
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: openBac ? 'flex' : 'none',
+                }}
+                open={openBac}
+            >
+                <CircularProgress style={{marginTop:"-40px"}} color="inherit" />
+            </Backdrop>
+          </div>
       </article>
     </section>
   );

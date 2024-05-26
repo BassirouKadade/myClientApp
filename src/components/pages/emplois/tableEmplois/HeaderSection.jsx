@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import { Button, Breadcrumbs, Typography } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Typography from '@mui/material/Typography';
+import { useQuery } from 'react-query';
+import { getTotalMasseHoraireGroupe } from '../../../authservice/create_emplois_request/createEmploisRequest';
 
 export default function HeaderSection({ data }) {
-  const {currentGroupeEmplois, handleClickOpenSalle } = data;
+  const { currentGroupeEmplois, handleClickOpenSalle } = data;
+  const [errorServer, setErrorServer] = useState({});
 
-  // Breadcrumb navigation
+  const { data: totalHeuresData, isLoading } = useQuery(
+    ['get-totale-seance-groupe', currentGroupeEmplois?.id],
+    async () => {
+      try {
+        const response = await getTotalMasseHoraireGroupe(currentGroupeEmplois?.id);
+        return response.data;
+      } catch (error) {
+        setErrorServer(error.response?.data || 'Une erreur est survenue');
+        throw error;
+      }
+    },
+    {
+      enabled: !!currentGroupeEmplois?.id,
+    }
+  );
+
   const breadcrumbs = [
     <Link
       key="1"
@@ -20,13 +36,18 @@ export default function HeaderSection({ data }) {
     <Typography key="2" style={{ fontSize: '15px' }} color="text.primary">
       Création d'emplois du temps
     </Typography>,
-    currentGroupeEmplois && currentGroupeEmplois.id ? (
+    currentGroupeEmplois?.id && (
       <Typography key="3" style={{ fontSize: '15px' }} color="text.primary">
-        {currentGroupeEmplois?.code}
+        {currentGroupeEmplois.code}
       </Typography>
-    ) : null
+    ),
+    currentGroupeEmplois?.id && (
+      <Typography key="4" style={{ fontSize: '15px' }} color="text.primary">
+        TMH {isLoading ? 'chargement...' : totalHeuresData?.totalHeures+"h"} 
+      </Typography>
+    ),
   ];
-  
+
   return (
     <div className="titreAlert">
       <span>

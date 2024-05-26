@@ -15,7 +15,12 @@ async function getEmploisGroupe(data) {
     return response;
 }
 
+async function getTotalMasseHoraireGroupe(data) {
+    const response = await api.get(`/emplois/get-Totale-Masse-Horaire/?idGroupe=${data}`);
+    return response;
+}
 export {
+    getTotalMasseHoraireGroupe,
     getEmploisGroupe,
     creerEmplois,
     verificationSalleDisponible
