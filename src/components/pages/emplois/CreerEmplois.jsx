@@ -15,6 +15,8 @@ import DataSearch from './DataSearch/DataSearch';
 import { getEmploisGroupe } from '../../authservice/create_emplois_request/createEmploisRequest';
 import InterfaceEmplois from './tableEmplois/InterfaceEmplois';
 import LogEmplois from '../../assets/eemplois.jpeg'
+import { Alert, Button, Space } from 'antd';
+import ModulesVerification from './ModulesVerification';
 export default function CreerEmplois() {
   // State management
   const [currentGroupeEmplois, setCurrentGroupeEmplois] = useState(null);
@@ -67,6 +69,9 @@ export default function CreerEmplois() {
     setGroupesFilter(groupes);
   };
 
+
+  // recuperation des moduel de groupes *********
+
   const { data: getModuleFiliereGroupe, isLoading: isLoadingModuleFiliereGroupes } = useQuery(
     ['get-Module-Filiere-groupe', currentGroupeEmplois?.id],
     async () => {
@@ -88,10 +93,32 @@ export default function CreerEmplois() {
   );
 
  
+  
   const handleClickOpenSalle = () => {
     setOpenSalle(true);
   };
 
+  const handleClickCloseSalle = () => {
+    setOpenSalle(false);
+  };
+
+  const [openModule, setOpenModule] = useState(false);
+
+  const handleClickOpenModule = () => {
+    setOpenModule(true);
+  };
+
+  const handleClickCloseModule = () => {
+    setOpenModule(false);
+  };
+
+
+
+  /*
+  Recuprtion d'emplois groupe *************************
+  ************************
+  *********
+  */
  
   
   const { data: getEmplois, isLoading: loadingGetEmplois } = useQuery(
@@ -101,8 +128,6 @@ export default function CreerEmplois() {
         throw new Error("L'ID du groupe n'est pas disponible");
       }
       try {
-        await new Promise(resolve=>setTimeout(resolve,3000))
-
         const response = await getEmploisGroupe(currentGroupeEmplois.id);
         return response.data;
       } catch (error) {
@@ -116,16 +141,19 @@ export default function CreerEmplois() {
     }
   );
  
-  const emplois={
-        "Lundi":getEmplois?.filter(element=>element.day==="Lundi"),
-        "Mardi":getEmplois?.filter(element=>element.day==="Mardi"),
-        "Mercredi":getEmplois?.filter(element=>element.day==="Mercredi"),
-        "Jeudi":getEmplois?.filter(element=>element.day==="Jeudi"),
-        "Vendredi":getEmplois?.filter(element=>element.day==="Vendredi"),
-        "Samedi":getEmplois?.filter(element=>element.day==="Samedi")
-  }
-  const [currentDate, setCurrentDate] = useState('');
+  const [emploisData,setEmploisData]=useState(getEmplois)
 
+
+  useEffect(()=>{
+    if(!loadingGetEmplois && getEmplois){
+      setEmploisData(getEmplois);
+    }
+   },[loadingGetEmplois,getEmplois])
+
+
+// fucntion pour recuepr la date du systeme $
+   
+  const [currentDate, setCurrentDate] = useState('');
   useEffect(() => {
     const today = new Date();
     const formattedDate = today.toLocaleDateString('fr-FR');
@@ -142,22 +170,84 @@ export default function CreerEmplois() {
    else{
     setOpenBac(true);
    }
-  },[loadingGetEmplois])
+  },[loadingGetEmplois  ])
 
- 
 
-  return (
+// Gestion Emplois de Salle qui sera recuper a partir de composant SallesVerifcation
+//**************************************** */
+
+const [dataEmploisSalle,setDataSemploisSalle]=useState({
+     data:[],
+     loading:null,
+     selectedSalle:false
+})
+
+useEffect(()=>{
+  if(dataEmploisSalle.loading){
+      setOpenBac(true);
+  }
+  else{
+   setOpenBac(false);
+  }
+ },[dataEmploisSalle.loading])
+
+
+//  gestion  d'emplois formateur ************
+//  ****************
+//  ***************
+const [dataEmploisFormateur, setDataEmploisFormateur] = useState({
+  data: [],
+  loading: null,
+  selectedFormateur: false
+});
+
+useEffect(() => {
+  if (dataEmploisFormateur.loading) {
+    setOpenBac(true);
+  } else {
+    setOpenBac(false);
+  }
+}, [dataEmploisFormateur.loading]);  // Correction ici: utiliser la dépendance correcte
+
+
+   return (
     <div className='div-creation-emplois'>
      
       <DialogContext setOpen={setOpenSalle} open={openSalle}>
-        <SallesVerification />
+        <SallesVerification setDataEmploisFormateur={setDataEmploisFormateur} handleClickCloseSalle={handleClickCloseSalle} setDataSemploisSalle={setDataSemploisSalle} />
+      </DialogContext>
+
+      <DialogContext setOpen={setOpenModule} open={openModule}>
+        <ModulesVerification data={{ getModuleFiliereGroupe,isLoadingModuleFiliereGroupes}}  />
       </DialogContext>
       <div className='div-emplois-headers'>
       
          <img style={{borderRadius:"50%"}} width={65} height={65} src={LogEmplois} alt="" />
-        <div>
+         <div>
+  {
+    dataEmploisSalle.selectedSalle && !dataEmploisSalle.loading ? (
+      <Alert
+        message="La consultation de l'emploi du temps de la salle a été effectuée avec succès."
+        type="success"
+        showIcon
+        closable
+      />
+    ) : (
+      dataEmploisFormateur.selectedFormateur && !dataEmploisFormateur.loading ? (
+        <Alert
+          message="La consultation de l'emploi du temps de formateur a été effectuée avec succès."
+          type="success"
+          showIcon
+          closable
+        />
+      ) : (
         <span className='dateStyle'>ISTA Bouznika {currentDate}</span>
-        </div>
+      )
+    )
+  }
+</div>
+
+      
       </div>
       <div className="div-emplois-body">
         <DataSearch
@@ -165,10 +255,10 @@ export default function CreerEmplois() {
             setFormDataSearch,
             refreshModuleList,
             loadingDataSearch,
+            setDataEmploisFormateur,
             isLoadingGetGroupes,
             groupesFilter,
-            isLoadingModuleFiliereGroupes,
-            getModuleFiliereGroupe,
+            setDataSemploisSalle,
             handleSearch,
             formDataSearch,
             setCurrentGroupeEmplois,
@@ -179,11 +269,12 @@ export default function CreerEmplois() {
             data={{
               currentGroupeEmplois,
               handleClickOpenSalle,
+              handleClickOpenModule
               // handleOpenBac
             }}
           />
           <InterfaceEmplois
-           data={{openBac,emplois, currentGroupeEmplois}}
+           data={{openBac,dataEmploisFormateur,setDataEmploisFormateur, setDataSemploisSalle, setEmploisData,dataEmploisSalle, emploisData, currentGroupeEmplois}}
           
           ></InterfaceEmplois>
           {/* <Table
@@ -204,3 +295,4 @@ export default function CreerEmplois() {
     </div>
   );
 }
+

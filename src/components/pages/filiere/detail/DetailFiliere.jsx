@@ -19,6 +19,8 @@ import {  Empty } from 'antd';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import Progress from '../../animation/Progess';
+import './detailFiliere.css'
+
 import { Alert, Space } from 'antd';
 export default function DetailFiliere() {
     const size = '76px';

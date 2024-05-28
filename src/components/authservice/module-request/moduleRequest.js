@@ -35,10 +35,7 @@ async function listeTousModuleNonPagine(id) {
     return response;
 }
 
-async function modulesFormateur(id) {
-    const response = await api.get(`/module/modules-formateur/?id=${id}`);
-    return response;
-}
+
 
 async function ajouterModuleFormateur(data) {
     const response = await api.post(`/module/ajouter-module-formateur/`,data);
@@ -60,4 +57,4 @@ async function getModuleFiliereGoupe(id) {
     return response;
 }
 
-export {getModuleFiliereGoupe, getInfosFormateur,deleteModuleFormateur,ajouterModuleFormateur, modulesFormateur, listeTousModuleNonPagine, searchModuleNext, ajouterModule, moduleSearch, updateModule, supprimerModule, listeModule };
+export {getModuleFiliereGoupe, getInfosFormateur,deleteModuleFormateur,ajouterModuleFormateur, listeTousModuleNonPagine, searchModuleNext, ajouterModule, moduleSearch, updateModule, supprimerModule, listeModule };

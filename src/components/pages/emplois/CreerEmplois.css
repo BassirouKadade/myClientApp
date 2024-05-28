@@ -100,7 +100,7 @@
 .module-groupe-text{ 
   background-color: rgb(255, 255, 255);
   color: #000;
-  font-weight: 400;
+  font-weight: 600;
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   overflow: hidden;
   position: relative;
@@ -108,7 +108,7 @@
   border-radius: 5px;
   padding: 6px 10px;
   background-color: rgb(244, 246, 248);
-
+font-size: 16px;
     line-height: 1.5;
   font-family: "Public Sans", sans-serif;
 }
@@ -216,4 +216,12 @@
 }
 
 
+/* data searche  */
 
+.elementHoverBackground {
+  background: linear-gradient(135deg, rgba(91, 228, 155, 0.2), rgba(0, 167, 111, 0.2)) rgb(255, 255, 255);
+}
+
+.hoverColor{
+  color: rgb(0, 167, 111);
+}

@@ -37,14 +37,13 @@
     border-radius: 16px;
     padding: 10px 0;
     text-align: center;
-    /* margin-bottom: 10px; */
+    margin-bottom: 10px;
     line-height: 1.5;
-    height: 100%;
+    height: 40%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     flex-direction: column;
-    background-color: red;
     font-family: "Public Sans", sans-serif;
 }
 
@@ -53,35 +52,35 @@
 
 
 /* À propos du formateur */
-.about-formateur-detail-ul {
-    /* background-color: rgb(255, 255, 255); */
+.about-formateur {
+    background-color: rgb(255, 255, 255);
     color: rgb(33, 43, 54);
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     position: relative;
-    box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 4px 14px -4px;
+    box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
     border-radius: 16px;
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-    height:49%;
+    height:60%;
     padding:0 13px;
     padding-top: 16px;
 }
 
-.about-formateur-detail-ul h5:nth-child(1){
+.about-formateur h5:nth-child(1){
     margin-left: 4px;
     font-size: 17px;
     /* font-style: italic; */
 }
-.about-formateur-detail-ul .list-module-formateur-detail-ul{
+.about-formateur .list-module-formateur{
      width: 100%;
-     height:100%;
+     height: 100%;
       padding: 0;
       overflow-y: scroll;
 
 }
 
-.list-module-formateur-detail-ul::-webkit-scrollbar-thumb {
+.list-module-formateur::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 10px;
 }
@@ -89,29 +88,29 @@
     overflow-y: auto;
 } */
 
-.list-module-formateur-detail-ul {
+.list-module-formateur {
     scrollbar-width: 10px;
 }
 
-.list-module-formateur-detail-ul::-webkit-scrollbar {
+.list-module-formateur::-webkit-scrollbar {
     width: 3px;
 }
 
-.list-module-formateur-detail-ul::-webkit-scrollbar-thumb {
+.list-module-formateur::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 10px;
 }
 
-.list-module-formateur-detail-ul:hover::-webkit-scrollbar-thumb {
+.list-module-formateur:hover::-webkit-scrollbar-thumb {
     background-color: #a7a5a5;
     height: 40px;
     border-radius: 10px;
 }
 
-.list-module-formateur-detail-ul::-webkit-scrollbar-track {
+.list-module-formateur::-webkit-scrollbar-track {
     background-color: #ffffff;
 }
-.list-module-formateur-detail-ul li {
+.list-module-formateur li {
     width: 100%;
     margin: 2px 0;
     padding: 2px 12px;
@@ -123,7 +122,7 @@
     list-style-type:none;
 
 }
-.list-module-formateur-detail-ul li:hover{
+.list-module-formateur li:hover{
     color:rgb(99, 115, 129);
     background-color: rgba(244, 246, 248, 0.767);   
 }
@@ -156,7 +155,7 @@
     font-family: "Public Sans", sans-serif;
     width: 62%;
     /* background-color: #a7a5a5; */
-    height: 96%;
+    height: 95%;
 }
 .nav-right-profile .moduldisponible {
     width: 100%;
@@ -244,39 +243,4 @@
 .info-teacher span:nth-child(1){  
     color:#000000;
     font-weight: 600;
-}
-
-
-.addDataGroupeModuleH5{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-}
-
-.addDataGroupeModuleH5 .addDataGroupeModule{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-sizing: border-box;
-    outline: 0px;
-    border: 0px;
-    cursor: pointer;
-    user-select: none;
-    vertical-align: middle;
-    appearance: none;
-    text-decoration: none;
-    font-weight: 500;
-    line-height: 1.71429;
-    font-size: 0.675rem;
-    text-transform: unset;
-    font-family: "Public Sans", sans-serif;
-    border-radius: 8px;
-    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    color: rgb(255, 255, 255);
-    background-color: rgba(0, 167, 111, 0.782);
-}
-.addDataGroupeModuleH5 .addDataGroupeModule:hover{
-    background-color: rgb(0, 167, 111,0.6);
-
 }

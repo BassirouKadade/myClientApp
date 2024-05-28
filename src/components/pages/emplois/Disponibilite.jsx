@@ -9,115 +9,12 @@ import { allSallesDatabase } from '../../authservice/salle-request/salleRequest'
 import { creerEmplois } from '../../authservice/create_emplois_request/createEmploisRequest';
 import { useQueryClient, useMutation } from 'react-query';
 import Progress from '../animation/Progess';
+import { UserOutlined } from '@ant-design/icons';
+import { FaTimes } from 'react-icons/fa';
 
-// Définition des éléments du menu
-const items = [
-  {
-    key: '1',
-    icon: <MailOutlined />,
-    label: 'Navigation One',
-    children: [
-      { key: '11', label: 'Option 1' },
-      { key: '12', label: 'Option 2' },
-      { key: '13', label: 'Option 3' },
-      { key: '14', label: 'Option 4' },
-    ],
-  },
-  {
-    key: '2',
-    icon: <AppstoreOutlined />,
-    label: 'Navigation Two',
-    children: [
-      { key: '21', label: 'Option 1' },
-      { key: '22', label: 'Option 2' },
-      {
-        key: '23',
-        label: 'Submenu',
-        children: [
-          { key: '231', label: 'Option 1' },
-          { key: '232', label: 'Option 2' },
-          { key: '233', label: 'Option 3' },
-        ],
-      },
-      {
-        key: '24',
-        label: 'Submenu 2',
-        children: [
-          { key: '241', label: 'Option 1' },
-          { key: '242', label: 'Option 2' },
-          { key: '243', label: 'Option 3' },
-        ],
-      },
-    ],
-  },
-  {
-    key: '3',
-    icon: <SettingOutlined />,
-    label: 'Navigation Three',
-    children: [
-      { key: '31', label: 'Option 1' },
-      { key: '32', label: 'Option 2' },
-      { key: '33', label: 'Option 3' },
-      { key: '34', label: 'Option 4' },
-    ],
-  },
-  {
-    key: '4',
-    icon: <MailOutlined />,
-    label: 'Navigation Four',
-    children: [
-      { key: '41', label: 'Option 1' },
-      { key: '42', label: 'Option 2' },
-      { key: '43', label: 'Option 3' },
-      { key: '44', label: 'Option 4' },
-    ],
-  },
-  {
-    key: '5',
-    icon: <AppstoreOutlined />,
-    label: 'Navigation Five',
-    children: [
-      { key: '51', label: 'Option 1' },
-      { key: '52', label: 'Option 2' },
-      { key: '53', label: 'Option 3' },
-      { key: '54', label: 'Option 4' },
-    ],
-  },
-  {
-    key: '6',
-    icon: <SettingOutlined />,
-    label: 'Navigation Six',
-    children: [
-      { key: '61', label: 'Option 1' },
-      { key: '62', label: 'Option 2' },
-      { key: '63', label: 'Option 3' },
-      { key: '64', label: 'Option 4' },
-    ],
-  },
-];
-
-// Fonction pour obtenir les niveaux des clés du menu
-const getLevelKeys = (items) => {
-  const keys = {};
-  const traverse = (items, level = 1) => {
-    items.forEach((item) => {
-      if (item.key) {
-        keys[item.key] = level;
-      }
-      if (item.children) {
-        traverse(item.children, level + 1);
-      }
-    });
-  };
-  traverse(items);
-  return keys;
-};
-
-// Obtenir les niveaux des clés pour le menu
-const levelKeys = getLevelKeys(items);
 
 // Composant principal
-export default function Disponibilite({nombreSeance, day, handleClose, top, isLoadingSalleGet, setStartFetching, width, start, end, salles, currentGroupeEmplois }) {
+export default function Disponibilite({formateurs,nombreSeance,setEmploisData, day, handleClose, top, isLoadingSalleGet, setStartFetching, width, start, end, salles, currentGroupeEmplois }) {
   const [salleSelect, setSalleSelect] = useState(null); // État pour la salle sélectionnée
   const [dataSendToServer, setDataSendToServer] = useState({
     startIndex: null,
@@ -126,10 +23,12 @@ export default function Disponibilite({nombreSeance, day, handleClose, top, isLo
     idGroupe: null,
     day: null,
     top: null,
+    idFormateur:null,
+    idModule:null
   });
 
   const [salleMrest, setSalleMrest] = useState(0); // État pour la salle restante
-  const [error, setError] = useState({ heureDisponible: false, groupe: false, salle: false }); // État pour les erreurs
+  const [error, setError] = useState({idModule:false,allowNullSalle:false, heureDisponible: false, groupe: false, salle: false }); // État pour les erreurs
 
   // Gestion de la sélection de la salle
   const onHandleSalle = (id, rest) => {
@@ -137,18 +36,6 @@ export default function Disponibilite({nombreSeance, day, handleClose, top, isLo
     setDataSendToServer((prev) => ({ ...prev, idSalle: id }));
   };
 
-  // Mise à jour des données à envoyer au serveur
-  useEffect(() => {
-    setDataSendToServer((prev) => ({
-      ...prev,
-      startEnd: end,
-      startIndex: start,
-      day: day,
-      width: width,
-      top: top,
-      idGroupe: currentGroupeEmplois?.id,
-    }));
-  }, [currentGroupeEmplois?.id, day, top, start, end]);
 
   const [stateOpenKeys, setStateOpenKeys] = useState(['2', '23']); // État pour les clés de menu ouvertes
 
@@ -173,19 +60,131 @@ export default function Disponibilite({nombreSeance, day, handleClose, top, isLo
   const queryClient = useQueryClient(); // Client pour les requêtes React Query
 
   // Mutation pour créer les emplois du temps
+   
   const { mutate, isLoading } = useMutation(async (data) => {
     try {
-      await creerEmplois(data);
+      const response = await creerEmplois(data);
+      return response;
     } catch (error) {
-      setErrorServer(error.response.data);
+      setErrorServer(error.response?.data || 'An error occurred');
+      throw error;
     }
   }, {
-    onSuccess: () => {
+    onSuccess: (data) => {
       handleClose();
+      if(data?.data){
+        setEmploisData(data?.data)
+      }
       queryClient.invalidateQueries('get-totale-seance-groupe');
       queryClient.invalidateQueries('get-emplois-groupe');
-    }
+      queryClient.invalidateQueries('get-Emplois-salle');
+
+    },
   });
+
+
+  
+// Déclaration des états pour stocker les formateurs disponibles, l'ID du formateur sélectionné et la clé de l'enfant sélectionné
+const [formateurDisponible, setFormateurDisponible] = useState([]);
+const [idFormateur, setIdFormateur] = useState(null);
+const [selectedChildKey, setSelectedChildKey] = useState(null);
+
+// useEffect pour mettre à jour la liste des formateurs disponibles lorsque les données des formateurs ou l'état de chargement changent
+useEffect(() => {
+  if (!isLoadingSalleGet && formateurs) {
+    // Mappage des formateurs pour créer une structure de données avec clés, icônes et libellés
+    const listeMap = formateurs.map((element) => {
+      return {
+        key: element.id,
+        icon: <UserOutlined />,
+        label: (
+          <span>
+            {element.nom} {element.prenom}
+          </span>
+        ),
+        children: element.modules
+          ? element.modules.map((module) => ({
+              // Génération d'une clé unique pour chaque module en utilisant des littéraux de gabarits
+              key: `${module.id}del${Date.now()}${Math.random() + 100}`,
+              label: module.description,
+            }))
+          : [],
+      };
+    });
+    // Mise à jour de l'état avec la nouvelle liste de formateurs
+    setFormateurDisponible(listeMap);
+  }
+}, [isLoadingSalleGet, formateurs]);
+
+// Gestion de la sélection dans le menu
+const handleSelect = ({ key, keyPath }) => {
+  if (keyPath.length > 1) {
+    // Si la clé sélectionnée appartient à un enfant, définir l'ID du formateur et la clé de l'enfant
+    setIdFormateur(keyPath[1]);
+    setSelectedChildKey(key);
+  } else {
+    // Sinon, définir uniquement l'ID du formateur
+    setIdFormateur(key);
+    setSelectedChildKey(null);
+  }
+};
+
+// Déclaration de l'état pour stocker l'ID du module sélectionné
+const [idModule, setIdModule] = useState('');
+
+// useEffect pour extraire l'ID du module à partir de la clé de l'enfant sélectionné
+useEffect(() => {
+  // Fonction pour extraire la partie avant "del" de la clé
+  const extractPartBeforeDel = (str) => {
+    const regex = /^(\d+)del/;
+    const match = str.match(regex);
+    return match ? match[1] : '';
+  };
+
+  // Si une clé d'enfant est sélectionnée, extraire et définir l'ID du module
+  if (selectedChildKey) {
+    const extractedPart = extractPartBeforeDel(selectedChildKey);
+    setIdModule(extractedPart);
+  }
+}, [selectedChildKey]);
+
+
+// Fonction pour obtenir les niveaux des clés du menu
+const getLevelKeys = (items) => {
+  const keys = {};
+  const traverse = (items, level = 1) => {
+    items.forEach((item) => {
+      if (item.key) {
+        keys[item.key] = level;
+      }
+      if (item.children) {
+        traverse(item.children, level + 1);
+      }
+    });
+  };
+  traverse(items);
+  return keys;
+};
+
+// Obtenir les niveaux des clés pour le menu
+
+  // Mise à jour des données à envoyer au serveur
+  useEffect(() => {
+    setDataSendToServer((prev) => ({
+      ...prev,
+      startEnd: end,
+      startIndex: start,
+      day: day,
+      width: width,
+      top: top,
+      idModule:idModule,
+      idFormateur:idFormateur,
+      idGroupe: currentGroupeEmplois?.id,
+    }));
+  }, [currentGroupeEmplois?.id, idFormateur,idModule,day, top, start, end]);
+
+const levelKeys = getLevelKeys(formateurDisponible);
+
 
   const [typeSeanceToSend, setTypeSeanceToSend] = useState(null); // État pour le type de séance à envoyer
 
@@ -195,61 +194,98 @@ export default function Disponibilite({nombreSeance, day, handleClose, top, isLo
       setError(prev => ({ ...prev, groupe: true }));
       return;
     }
-    if (!dataSendToServer.idSalle) {
+    if (!dataSendToServer.idSalle &&typeSeance==="FP") {
       setError(prev => ({ ...prev, salle: true }));
       return;
     }
-    if (nombreSeance > salleMrest) {
+    if (nombreSeance > salleMrest && typeSeance==="FP") {
       setError(prev => ({ ...prev, heureDisponible: true }));
       return;
     }
+    if (idModule ===null || !idModule) {
+      setError(prev => ({ ...prev, idModule: true }));
+      return;
+    }
+
+    if (dataSendToServer.idSalle&&typeSeance==="FAD") {
+      setError(prev => ({ ...prev, allowNullSalle: true }));
+      return;
+    }
+    
     dataSendToServer.typeSeance = typeSeance;
     mutate(dataSendToServer);
   };
 
   const [api, contextHolder] = notification.useNotification(); // Notification API
 
-  // Fonction pour ouvrir une notification pour le groupe
-  const openNotificationWithIcon = (type) => {
-    api[type]({
-      message: 'Notification Groupe',
-      description: "Vous devez définir un groupe auquel l'emploi du temps sera créé.",
-    });
-  };
+// Fonction pour ouvrir une notification lorsque le groupe n'est pas défini
+const openNotificationGroupNotDefined = (type) => {
+  api[type]({
+    message: 'Alerte Groupe Non Défini',
+    description: "Veuillez sélectionner un groupe pour pouvoir créer l'emploi du temps.",
+  });
+};
 
-  // Fonction pour ouvrir une notification pour la salle
-  const openNotificationWithIconSalle = (type) => {
-    api[type]({
-      message: 'Notification Salle',
-      description: "Vous devez définir une salle à laquelle l'emploi du temps sera créé.",
-    });
-  };
+// Fonction pour ouvrir une notification lorsque la salle n'est pas définie
+const openNotificationRoomNotDefined = (type) => {
+  api[type]({
+    message: 'Alerte Salle Non Définie',
+    description: "Veuillez sélectionner une salle pour pouvoir créer l'emploi du temps.",
+  });
+};
+
+// Fonction pour ouvrir une notification lorsque la disponibilité de la salle est insuffisante
+const openNotificationRoomAvailability = (type) => {
+  api[type]({
+    placement: "topLeft",
+    message: 'Alerte Disponibilité Salle',
+    description: "La disponibilité horaire de la salle sélectionnée est insuffisante. Veuillez choisir une autre salle ou ajuster l'emploi du temps.",
+  });
+};
+
 
   // Fonction pour ouvrir une notification pour la disponibilité de la salle
-  const openNotificationWithIconDisponibiliteSalleMH = (type) => {
-    api[type]({
-      placement: "topLeft",
-      message: 'Notification Salle',
-      description: "La masse horaire de la salle sélectionnée n'est pas suffisante. Veuillez choisir une autre salle ou ajuster votre emploi du temps.",
-    });
-  };
+// Fonction pour afficher une notification lorsqu'aucun formateur n'est défini
+const openNotificationWithIconsFormateurIndefini = (type) => {
+  api[type]({
+    placement: "topLeft",
+    message: 'Aucun formateur défini',
+    description: "Le formateur et le module doivent être sélectionnés pour pouvoir créer l'emploi du temps.",
+  });
+};
+
+const openNotificationWithIconsallowNullSalle = (type) => {
+  api[type]({
+    placement: "topLeft",
+    message: 'Salle Définie',
+    description: "La salle ne doit pas être sélectionnée pour une formation à distance.",
+  });
+};
+
 
   // Gestion des notifications d'erreur
   useEffect(() => {
-    if (error.groupe) {
-      openNotificationWithIcon('error');
+    if (error?.groupe) {
+      openNotificationGroupNotDefined('error');
     }
-    if (error.salle) {
-      openNotificationWithIconSalle('error');
+    if (error?.salle) {
+      openNotificationRoomNotDefined('error');
     }
-    if (error.heureDisponible) {
-      openNotificationWithIconDisponibiliteSalleMH('error');
+    if (error?.heureDisponible) {
+      openNotificationRoomAvailability('error');
     }
-
+    if (error?.idModule) {
+      openNotificationWithIconsFormateurIndefini('error');
+    }
+    if (error?.allowNullSalle) {
+      openNotificationWithIconsallowNullSalle('error');
+    }
+    
     setTimeout(() => {
       setError({ groupe: false, salle: false });
     }, 1000);
   }, [error]);
+
 
   return (
     <div className='disponiblite-data'>
@@ -278,8 +314,16 @@ export default function Disponibilite({nombreSeance, day, handleClose, top, isLo
       </article>
       <article className='disponiblite-formateur-salle'>
         <div className="disponiblite-formateur">
-          <h6>Salles Disponibles</h6>
-          <ul className='disponiblite-formateur-ul'>
+        <h6 style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <span>Salles Disponibles</span>
+
+        <FaTimes style={{color:"red"}}  onClick={() =>{ 
+           setDataSendToServer((prev) => ({
+            ...prev,
+            idSalle:null
+          }));
+          setSalleSelect(null)}} />
+    </h6>          <ul className='disponiblite-formateur-ul'>
             {
               isLoadingSalleGet ? [1, 2, 3, 4, 5, 6].map((_, index) => (
                 <Skeleton
@@ -309,19 +353,30 @@ export default function Disponibilite({nombreSeance, day, handleClose, top, isLo
         </div>
         <div className="disponiblite-salle">
           <h6>Formateurs Disponibles</h6>
-          <Menu
-            mode="inline"
-            defaultSelectedKeys={['231']}
-            openKeys={stateOpenKeys}
-            onOpenChange={onOpenChange}
-            className='overflowYNav'
-            style={{
-              width: 256,
-              overflowY: "scroll",
-              height: "calc(100% - 20px)",
-            }}
-            items={items}
-          />
+          {
+              isLoadingSalleGet ? [1, 2, 3, 4, 5, 6].map((_, index) => (
+                <Skeleton
+                  baseColor='#f7f7f7'
+                  highlightColor='#ebebeb'
+                  style={{ margin: "5px 0", width: "100%", height: "35px" }}
+                  key={index}
+                />
+              )) :  <Menu
+      mode="inline"
+      defaultSelectedKeys={['231']}
+      openKeys={stateOpenKeys}
+      onOpenChange={onOpenChange}
+      className='overflowYNav'
+      onSelect={handleSelect}
+      style={{
+        width: 256,
+        overflowY: "scroll",
+        height: "calc(100% - 20px)",
+      }}
+      items={formateurDisponible}
+    />
+            }
+          
         </div>
       </article>
     </div>

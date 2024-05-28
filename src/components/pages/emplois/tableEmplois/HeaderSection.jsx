@@ -6,7 +6,7 @@ import { useQuery } from 'react-query';
 import { getTotalMasseHoraireGroupe } from '../../../authservice/create_emplois_request/createEmploisRequest';
 
 export default function HeaderSection({ data }) {
-  const { currentGroupeEmplois, handleClickOpenSalle } = data;
+  const { currentGroupeEmplois,handleClickOpenModule, handleClickOpenSalle } = data;
   const [errorServer, setErrorServer] = useState({});
 
   const { data: totalHeuresData, isLoading } = useQuery(
@@ -66,8 +66,10 @@ export default function HeaderSection({ data }) {
         <Button
           style={{ background: 'green', color: '#ffffff' }}
           className="btn btn-primary"
+          onClick={handleClickOpenModule}
+          disabled={!currentGroupeEmplois?.id}
         >
-          Formateurs
+          Modules
         </Button>
         <Button
           style={{ background: 'blue', color: '#ffffff' }}

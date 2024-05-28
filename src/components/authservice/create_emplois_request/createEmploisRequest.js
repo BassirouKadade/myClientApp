@@ -19,7 +19,19 @@ async function getTotalMasseHoraireGroupe(data) {
     const response = await api.get(`/emplois/get-Totale-Masse-Horaire/?idGroupe=${data}`);
     return response;
 }
+
+async function getEmploisSalle(id) {
+    const response = await api.get(`/emplois/get-emplois-salle/?idSalle=${id}`);
+    return response;
+}
+
+async function getEmploisFormateur(id) {
+    const response = await api.get(`/emplois/get-emplois-formateur/?idFormateur=${id}`);
+    return response;
+}
 export {
+    getEmploisSalle,
+    getEmploisFormateur,
     getTotalMasseHoraireGroupe,
     getEmploisGroupe,
     creerEmplois,

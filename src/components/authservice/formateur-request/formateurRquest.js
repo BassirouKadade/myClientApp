@@ -34,7 +34,34 @@ async function listeTousFormateurNonPagine() {
         const response = await api.get(`/formateur/all-formateurs`);
         return response;
     }
+  
+    async function getModulesFormateur(id) {
+        const response = await api.get(`/module/modules-formateur/?id=${id}`);
+        return response;
+    }
+
+//     ********* Pasrealsier
+ 
+
+    async function     ajouterMGroupeFormateur(data) {
+        const response = await api.post(`/formateur/add-groupe-formateur/`,data);
+        return response;
+    }
+
+    async function getGroupesFormateur(id) {
+        const response = await api.get(`/formateur/groupe-formateur/?id=${id}`);
+        return response;
+    }
+
+     async function getGroupesNonInclusFormateur(id) {
+        const response = await api.get(`/formateur/getGroupesNonInclusFormateur/?idFormateur=${id}`);
+        return response;
+    }
+  async function deleteGroupeFormateur(data) {
+        const response = await api.post(`/formateur/supprimer-groupe-formateur/`,data);
+        return response;
+    }
+
     
 
-
-export {listeTousFormateurNonPagine,searchFormateurNext,ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};
+export {getGroupesFormateur,deleteGroupeFormateur,getGroupesNonInclusFormateur, ajouterMGroupeFormateur ,getModulesFormateur,listeTousFormateurNonPagine,searchFormateurNext,ajouterFormateur,formateurSearch, updateformateur,supprimerformateur,listeFormateur};

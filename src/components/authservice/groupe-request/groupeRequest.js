@@ -30,8 +30,13 @@ async function getInfoGroupesTotatles() {
     return response;
 }
 
+async function getFormateurGroupe(id) {
+    const response = await api.get(`/groupe/get-formateur-groupe?idGroupe=${id}`);
+    return response;
+}
 
 export {
+    getFormateurGroupe,
     getInfoGroupesTotatles,
     ajouterGroupe,
     listeGroupe,
