@@ -4,6 +4,8 @@ import { Button, Breadcrumbs, Typography } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useQuery } from 'react-query';
 import { getTotalMasseHoraireGroupe } from '../../../authservice/create_emplois_request/createEmploisRequest';
+import Skeleton from 'react-loading-skeleton'; // Import du composant Skeleton pour l'affichage de chargement
+import 'react-loading-skeleton/dist/skeleton.css';
 
 export default function HeaderSection({ data }) {
   const { currentGroupeEmplois,handleClickOpenModule, handleClickOpenSalle } = data;
@@ -43,10 +45,18 @@ export default function HeaderSection({ data }) {
     ),
     currentGroupeEmplois?.id && (
       <Typography key="4" style={{ fontSize: '15px' }} color="text.primary">
-        TMH {isLoading ? 'chargement...' : totalHeuresData?.totalHeures+"h"} 
+         {isLoading ? 
+         <Skeleton
+         baseColor='#f7f7f7'
+         highlightColor='#ebebeb'
+         style={{  width: "100px", height: "28px" }}
+       />
+        : "TMH "+ totalHeuresData?.totalHeures+"h"} 
       </Typography>
     ),
   ];
+
+ 
 
   return (
     <div className="titreAlert">

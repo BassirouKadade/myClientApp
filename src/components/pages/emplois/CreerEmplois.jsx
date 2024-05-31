@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './CreerEmplois.css';
-
 import { useQuery } from 'react-query';
 import { getModuleFiliereGoupe } from '../../authservice/module-request/moduleRequest';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -277,19 +276,7 @@ useEffect(() => {
            data={{openBac,dataEmploisFormateur,setDataEmploisFormateur, setDataSemploisSalle, setEmploisData,dataEmploisSalle, emploisData, currentGroupeEmplois}}
           
           ></InterfaceEmplois>
-          {/* <Table
-            data={{
-              loadingGetEmplois,
-              handleMouseDown,
-              openBac,
-              handleMouseMove,
-              // handleCloseBac,
-              handleMouseUp,
-              selection
-            }}
-            days={days}
-            hours={hours}
-          /> */}
+          {/* <DisponibliteJour></DisponibliteJour> */}
         </div>
       </div>
     </div>

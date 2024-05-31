@@ -128,6 +128,15 @@ export default function NavBarLeft() {
                   </Button>
                 </Link>
               </li>
+              <li onClick={() => setElementHover(2)}>
+                <Link to="/creer-emploi" className="containerLink">
+                  <Button className={`contained ${elementHover === 2 ? 'elementHoverBackground' : ''}`} style={{ boxShadow: 'none' }} variant="contained">
+                    <span className="span-li">
+                      <FaCalendar style={{ color: elementHover === 2 ? 'rgb(0, 167, 111)' : '' }} className="span-li-icon" /> <span className={`${elementHover === 2 ? 'hoverColor' : ''}`}>Imprimer Emplois</span>
+                    </span>
+                  </Button>
+                </Link>
+              </li>
             </ul>
           </div>
         </li>

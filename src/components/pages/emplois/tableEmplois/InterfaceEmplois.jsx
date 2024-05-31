@@ -7,7 +7,15 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import { notification } from 'antd';
 import { SmileOutlined } from '@ant-design/icons';
-
+import { FaDeleteLeft } from "react-icons/fa6";
+import { MdDelete } from "react-icons/md";
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Popconfirm ,message} from 'antd';
+import { useQueryClient } from 'react-query';
+import {Link}  from 'react-router-dom'
+import { useMutation } from 'react-query';
+import { deleteSeanceReservation } from '../../../authservice/create_emplois_request/createEmploisRequest';
 import { verificationSalleDisponible } from '../../../authservice/create_emplois_request/createEmploisRequest';
 const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const hours = [
@@ -63,6 +71,8 @@ const hasOneNotEmptyFormateur = Object.values(emploisFormateur)?.some(array => a
   const [indexDay,setIndexDay]=useState(null)
   const [selection,setSelection]=useState({})
   const [nombreSeance,setNombreSeance]=useState(0)
+  const [seanceSelected,setSeanceSelected]=useState(null)
+
   // const [right,setRight]=useState(0)
   // const [cordonne,setCordonne]=useState({x:null,y:null})
 
@@ -75,7 +85,7 @@ const hasOneNotEmptyFormateur = Object.values(emploisFormateur)?.some(array => a
   },[width])
 
   function handleMouseMove(event) {
-    
+  
     const { pageX,
       //  pageY 
       } = event;
@@ -94,6 +104,7 @@ const hasOneNotEmptyFormateur = Object.values(emploisFormateur)?.some(array => a
     for (let i = 0; i <= maxValue; i++) {
       if (valeur > i) {
         valeurWidthAdd += 45;
+        setSeanceSelected(null)
       }
     }
     setWidth(valeurWidthAdd);
@@ -386,195 +397,257 @@ useEffect(()=>{
   }, [hasOneNotEmptySalle, dataEmploisSalle?.selectedSalle, dataEmploisSalle.loading]);
 // console.log(hasOneNotEmptySalle)
 
-console.log(dataEmploisFormateur?.selectedFormateur)
+const [confirmLoading, setConfirmLoading] = useState(false);
+const [openDelete, setOpenDelete] = useState(false);
+const queryClient = useQueryClient();
+const { mutate: deleteSeanceReservationMutation, isLoadingDeleteReservation } = useMutation(
+  async (data) => {
+    try {
+      // Suppression du module formateur
+      await deleteSeanceReservation(data);
+    } catch (error) {
+      console.error("Erreur lors de la suppression du module pour le formateur:", error);
+      throw new Error("Échec de la suppression du module pour le formateur.");
+    }
+  },
+  {
+    onSuccess: () => {
+      // Invalidation des requêtes pour mettre à jour les données
+      queryClient.invalidateQueries('get-emplois-groupe');
+      queryClient.invalidateQueries('get-totale-seance-groupe');
+      queryClient.invalidateQueries('get-Emplois-formateur-unique');
+    },
+  }
+);
 
+const handleOk = async () => {
+  setConfirmLoading(true);
+  try {
+    await deleteSeanceReservationMutation(seanceSelected );
+    setOpenDelete(false);
+    message.success('La réservation a été supprimé avec succès', 2);
+  } catch (error) {
+    console.error("Une erreur s'est produite lors de la suppression du module:", error);
+    message.error("Une erreur s'est produite lors de la suppression du module", 2);
+  } finally {
+    setConfirmLoading(false);
+  }
+};
+
+const handleCancel = () => {
+  message.error('La suppression a été annulée', 2);
+  setOpenDelete(false);
+  setSeanceSelected(null)
+};
+
+// supprimer une seance d'emplis du tempos du temps
+
+// console.log('erre',seanceSelected)
   return (
     <section className='sectionEmplois'>
-       <DialogContext setOpen={setOpen} open={open}>
-        <Disponibilite  
-          start={selection.startIndex}
-          end={selection.endIndex}
-          day={selection.day}
-          width={selection.width}
-          isLoadingSalleGet={isLoading}
-          salles={sallesDisponibles}
-          formateurs={formateursDisponibles}
-          setStartFetching={setStartFetching}
-          handleClose={handleClose}
-          top={top}
-          setEmploisData={setEmploisData}
-          nombreSeance={nombreSeance}
-          currentGroupeEmplois={currentGroupeEmplois}
-        />
-      </DialogContext>
-      <article className="headerEmplois">
-          <div className='jourHeure'>
-               J/H
-          </div>
-          <div className='HeureEmplois'>
-           {
-            hours.map((hour,index)=>{
-                  return <span  style={{borderRight:index%2!==0?"1px solid #ffff":"1px dashed #ffffffad"}}  className='hourEmploisSpan' key={index}>{hour}</span>
-            })
+    <DialogContext setOpen={setOpen} open={open}>
+      <Disponibilite
+        start={selection.startIndex}
+        end={selection.endIndex}
+        day={selection.day}
+        width={selection.width}
+        isLoadingSalleGet={isLoading}
+        salles={sallesDisponibles}
+        formateurs={formateursDisponibles}
+        setStartFetching={setStartFetching}
+        handleClose={handleClose}
+        top={top}
+        setEmploisData={setEmploisData}
+        nombreSeance={nombreSeance}
+        currentGroupeEmplois={currentGroupeEmplois}
+      />
+    </DialogContext>
+    <article className="headerEmplois">
+      <div className='jourHeure'>J/H</div>
+      <div className='HeureEmplois'>
+        {hours.map((hour, index) => (
+          <span
+            style={{ borderRight: index % 2 !== 0 ? "1px solid #000" : "1px dashed #fff" }}
+            className='hourEmploisSpan'
+            key={index}
+          >
+            {hour}
+          </span>
+        ))}
+      </div>
+    </article>
+    <article className="bodyEmplois">
+      <div className="dayEmplois">
+        {days.map((day, index) => (
+          <Link style={{textDecoration:"none"}} to={`/consulatation/occupation/${day}`}  key={index} >
+          <span
+            style={{ borderBottom: index === 5 ? "none" : "" }}
+            className="dayEmploisSpan"
+           
+          >
+            {day}
+          </span>
+          </Link>
+        ))}
+      </div>
+      <div style={{ width: 900, height: 310, position: "relative" }} className="backdropEmplois">
+        <div
+          ref={containerRef}
+          onMouseUp={handleMouseUp}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          className={`containerEmplois ${cursor ? "cursorResize" : ""}`}
+        >
+          <span
+            style={{
+              width: `${width}px`,
+              top: `${top}%`,
+              left: `${left}%`,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+            className="spanCol"
+          >
+            <span className={`${width > 0 ? "howNombreSeance" : "hideNombreSeance"}`}>
+              {nombreSeance}h
+            </span>
+          </span>
+          {dataEmploisSalle?.selectedSalle ? (
+            !dataEmploisSalle.loading ?
+              hasOneNotEmptySalle ?
+                Object.keys(emploisSalle).map((day) => (
+                  <React.Fragment key={day}>
+                    {emploisSalle[day].map((emploi, index) => (
+                      <span
+                        className="SpanSeanceGroupe"
+                        style={{
+                          backgroundColor: "green",
+                          top: `${emploi.startTop}%`,
+                          left: `${emploi.startIndex}%`,
+                          width: emploi.width,
+                        }}
+                        key={index}
+                      >
+                        <span style={{ textTransform: "capitalize", fontSize: "14px" }}>
+                          {emploi?.formateurInfo}
+                        </span>
+                        <span style={{ fontSize: "13px", display: "flex", alignItems: "center", flexDirection: "column" }}>
+                          <span>{emploi.groupe}</span>
+                        </span>
+                      </span>
+                    ))}
+                  </React.Fragment>
+                )) : null
+              : null) :
+            dataEmploisFormateur.selectedFormateur ? (
+              !dataEmploisFormateur.loading ?
+                hasOneNotEmptyFormateur ?
+                  Object.keys(emploisFormateur).map((day) => (
+                    <React.Fragment key={day}>
+                      {emploisFormateur[day].map((emploi, index) => (
+                        <span
+                          className="SpanSeanceGroupe"
+                          style={{
+                            backgroundColor: emploi.typeReservation === "FAD" ? "sienna" : "mediumblue",
+                            top: `${emploi.startTop}%`,
+                            left: `${emploi.startIndex}%`,
+                            width: emploi.width,
+                          }}
+                          key={index}
+                        >
+                          <span style={{ textTransform: "capitalize", fontSize: "14px" }}>
+                            {emploi?.formateurInfo}
+                          </span>
+                          <span style={{ fontSize: "13px", display: "flex", alignItems: "center", flexDirection: "column" }}>
+                            <span>{emploi.groupe}</span>
+                          </span>
+                        </span>
+                      ))}
+                    </React.Fragment>
+                  )) : null
+                : null) :
+              (hasOneNotEmpty &&
+                Object.keys(emplois).map((day) => (
+                  <React.Fragment key={day}>
+                    {emplois[day].map((emploi, index) => (
+                      <span
+
+                        className={`SpanSeanceGroupe ${seanceSelected===emploi.id?"seanceSelected":emploi.typeReservation === "FAD" ?"backgroundSeanceFAD":""}`}
+                        style={{
+                          top: `${emploi.startTop}%`,
+                          left: `${emploi.startIndex}%`,
+                          width: emploi.width,
+                        }}
+                        key={index}
+                        onClick={() =>{ setSeanceSelected(emploi.id)}}
+
+                      >
+                        
+                        <span className='supprimerEmplois' style={{ position: "absolute" }}>
+                        {
+                          seanceSelected===emploi.id&& <IconButton
+                          aria-label="delete"
+                          onClick={() =>{ setOpenDelete(true)}}
+                          style={{ backgroundColor: 'lightgray' }}
+                        >
+                          <DeleteIcon style={{ fontSize: "17px", color: "red" }} />
+                        </IconButton>
+                        }
+                         
+                        </span>
+                        <span style={{ textTransform: "capitalize", fontSize: "13px" }}>
+                          {emploi?.formateurInfo}
+                        </span>
+                        {emploi.typeReservation === "FP" ? (
+                          <span style={{ fontSize: "10px", display: "flex", alignItems: "center", flexDirection: "column" }}>
+                            <span style={{ fontSize: "11px" }}>{emploi.module}</span>
+                            <span>{emploi.salle}</span>
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: "10px", display: "flex", alignItems: "center", flexDirection: "column" }}>
+                            <span style={{ fontSize: "11px" }}>{emploi.module}</span>
+                            <span>{emploi.typeReservation}</span>
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </React.Fragment>
+                )))
           }
-           {/* {JSON.stringify(selection)} */}
-          </div>
-      </article>
-      <article className="bodyEmplois">
-  <div className="dayEmplois">
-    {days.map((day, index) => (
-      <span
-        style={{ borderBottom: index === 5 ? "none" : "" }}
-        className="dayEmploisSpan"
-        key={index}
-      >
-        {day}
-      </span>
-    ))}
-  </div>
-  <div style={{ width: 900, height: 310, position: "relative" }} className="backdropEmplois">
-    <div
-      ref={containerRef}
-      onMouseUp={handleMouseUp}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      className={`containerEmplois ${cursor ? "cursorResize" : ""}`}
-    >
-      <span
-        style={{
-          width: `${width}px`,
-          top: `${top}%`,
-          left: `${left}%`,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-        }}
-        className="spanCol"
-      >
-        <span className={`${width > 0 ? "howNombreSeance" : "hideNombreSeance"}`}>
-          {nombreSeance}h
-        </span>
-      </span>
-      {dataEmploisSalle?.selectedSalle ? (
-        !dataEmploisSalle.loading?
-        hasOneNotEmptySalle ?
-        Object.keys(emploisSalle).map((day) => (
-          <React.Fragment key={day}>
-            {emploisSalle[day].map((emploi, index) => (
-              <span
-                className="SpanSeanceGroupe"
-                style={{
-                  backgroundColor: "green" ,
-                  top: `${emploi.startTop}%`,
-                  left: `${emploi.startIndex}%`,
-                  width: emploi.width,
-                }}
-                key={index}
-              >
-                <span style={{ textTransform: "capitalize", fontSize: "14px" }}>
-                  {emploi?.formateurInfo}
-                </span>
-                  <span style={{ fontSize: "13px", display: "flex", alignItems: "center", flexDirection: "column" }}>
-                    {/* <span style={{ fontSize: "11px" }}>{emploi.module}</span> */}
-                    <span>{emploi.groupe}</span>
-                  </span>
-                
-              </span>
-            ))}
-          </React.Fragment>
-        )):null
-      :null) : 
-      dataEmploisFormateur.selectedFormateur?
-      (
-        !dataEmploisFormateur.loading?
-        hasOneNotEmptyFormateur ?
-        Object.keys(emploisFormateur).map((day) => (
-          <React.Fragment key={day}>
-            {emploisFormateur[day].map((emploi, index) => (
-              <span
-                className="SpanSeanceGroupe"
-                style={{
-                  backgroundColor: emploi.typeReservation === "FAD" ? "sienna" : "mediumblue",
-                  top: `${emploi.startTop}%`,
-                  left: `${emploi.startIndex}%`,
-                  width: emploi.width,
-                }}
-                key={index}
-              >
-                <span style={{ textTransform: "capitalize", fontSize: "14px" }}>
-                  {emploi?.formateurInfo}
-                </span>
-                  <span style={{ fontSize: "13px", display: "flex", alignItems: "center", flexDirection: "column" }}>
-                    {/* <span style={{ fontSize: "11px" }}>{emploi.module}</span> */}
-                    <span>{emploi.groupe}</span>
-                  </span>
-                
-              </span>
-            ))}
-          </React.Fragment>
-        )):null
-      :null) 
-
-        :
-         (
-        hasOneNotEmpty &&
-        Object.keys(emplois).map((day) => (
-          <React.Fragment key={day}>
-            {emplois[day].map((emploi, index) => (
-              <span
-                className="SpanSeanceGroupe"
-                style={{
-                  backgroundColor: emploi.typeReservation === "FAD" ? "rgba(148, 0, 211, 0.599)" : "",
-                  top: `${emploi.startTop}%`,
-                  left: `${emploi.startIndex}%`,
-                  width: emploi.width,
-                }}
-                key={index}
-              >
-                <span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-                  {emploi?.formateurInfo}
-                </span>
-
-                {emploi.typeReservation === "FP" ? (
-                  <span style={{ fontSize: "10px", display: "flex", alignItems: "center", flexDirection: "column" }}>
-                    <span style={{ fontSize: "11px" }}>{emploi.module}</span>
-                    <span>{emploi.salle}</span>
-                  </span>
-                ) : (
-                  <span style={{ fontSize: "10px", display: "flex", alignItems: "center", flexDirection: "column" }}>
-                    <span style={{ fontSize: "11px" }}>{emploi.module}</span>
-                    <span>{emploi.typeReservation}</span>
-                  </span>
-                )
-                
-                }
-
-
-              </span>
-            ))}
-          </React.Fragment>
-        ))
-      )}
-    </div>
-    <Backdrop
-      sx={{
-        color: "#fff",
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: openBac ? "flex" : "none",
-      }}
-      open={openBac}
-    >
-      <CircularProgress style={{ marginTop: "-40px" }} color="inherit" />
-    </Backdrop>
-  </div>
-</article>
-
-    </section>
+          <Popconfirm
+            title="Suppression"
+            description="Êtes-vous sûr de vouloir supprimer la réservation ?"
+            open={openDelete}
+            placement='top'
+            onConfirm={handleOk}
+            cancelText="Non"
+            okText="Oui"
+            okButtonProps={{
+              loading: confirmLoading,
+              style: { backgroundColor: 'red', borderColor: 'red' }
+            }}
+            onCancel={handleCancel}
+          />
+        </div>
+        <Backdrop
+          sx={{
+            color: "#fff",
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: openBac ? "flex" : "none",
+          }}
+          open={openBac}
+        >
+          <CircularProgress style={{ marginTop: "-40px" }} color="inherit" />
+        </Backdrop>
+      </div>
+    </article>
+  </section>
   );
 }

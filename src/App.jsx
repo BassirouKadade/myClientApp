@@ -13,6 +13,7 @@ import ListeSalle from './components/pages/salle/liste/ListeSalle';
 import DetailFiliere from './components/pages/filiere/detail/DetailFiliere';
 import ListeGroupe from './components/pages/groupe/liste/ListeGroupe';
 import CreerEmplois from './components/pages/emplois/CreerEmplois';
+import OccupationJour from './components/pages/emplois/ocupationJour/OccupationJour';
 import { App as AntdApp } from 'antd';
 
 function MyApp() {
@@ -51,9 +52,11 @@ function MyApp() {
             <Route path="salle/liste-salle" element={<ListeSalle />} />
             <Route path="filiere/detail-filiere/:id" element={<DetailFiliere />} />
             <Route path="groupe/liste-groupe" element={<ListeGroupe />} />
+            <Route path="consulatation/occupation/:day" element={<OccupationJour />} />
           </Route>
           <Route path="/creer-emploi" element={<CreerEmplois />} />
         </Routes>
+      
       </BrowserRouter>
   );
 }
